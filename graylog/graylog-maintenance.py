@@ -38,7 +38,7 @@ def mute_events():
 
     # Track events that were already disabled
     try:
-        with open("last_disabled.txt", "w") as f:
+        with open("/tmp/last_disabled.txt", "w") as f:
             for event in event_definitions:
                 event_id = event["id"]
                 title = event["title"]
@@ -87,11 +87,11 @@ def unmute_events():
 
     # Read previously disabled events
     try:
-        with open("last_disabled.txt", "r") as f:
+        with open("/tmp/last_disabled.txt", "r") as f:
             last_disabled = f.read().splitlines()
         print(f"ℹ Found {len(last_disabled)} previously disabled events to preserve")
     except FileNotFoundError:
-        print("✗ Error: last_disabled.txt not found - cannot safely unmute without knowing which events were previously disabled")
+        print("✗ Error: /tmp/last_disabled.txt not found - cannot safely unmute without knowing which events were previously disabled")
         return False
 
     try:

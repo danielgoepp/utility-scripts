@@ -21,7 +21,7 @@ def check_and_delete_stale_acme_challenges():
         records = response.json()
 
         with open(
-            "/Users/dang/Documents/Development/goepp-lab/cloudflare/cf_clear_stale_acme_backup.json",
+            "/tmp/cf_clear_stale_acme_backup.json",
             "w",
         ) as backup_file:
             json.dump(records, backup_file, indent=2)
