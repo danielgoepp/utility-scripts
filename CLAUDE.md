@@ -11,6 +11,7 @@ This repository contains a collection of Python utility scripts for managing and
 - **graylog/**: Scripts for Graylog log management system maintenance
 - **hertzbeat/**: Tools for HertzBeat monitoring system management
 - **homeassistant/**: Utilities for Home Assistant smart home platform integration
+- **mqtt/**: MQTT client utilities for messaging and testing
 - **uptime-kuma/**: Utilities for Uptime Kuma monitoring service
 
 Each service directory follows a consistent pattern:
@@ -60,6 +61,7 @@ Scripts use external Python libraries:
 - `uptime-kuma-api` for Uptime Kuma integration
 - `pandas` for data processing (hertzbeat-management.py)
 - `python-dotenv` for environment variable loading
+- `paho-mqtt` for MQTT client operations
 - Standard library modules: `os`, `json`, `argparse`, `datetime`
 
 ## Common Operations
