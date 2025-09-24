@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 UNIFI_CONTROLLER = os.getenv("UNIFI_CONTROLLER")
 USERNAME = os.getenv("UNIFI_USERNAME")
