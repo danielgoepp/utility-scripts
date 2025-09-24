@@ -3,3 +3,4 @@ uptime-kuma-api
 pandas
 python-dotenv
 paho-mqtt
+scapy
