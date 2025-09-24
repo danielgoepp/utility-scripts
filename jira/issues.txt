@@ -1,0 +1,34 @@
+opnsense
+ui-network
+ui-protect
+iwatt
+apc01
+pve
+morgsnas
+rockyledge
+k3s
+mgmt
+kubectl
+k9s
+traefik
+mongdodb
+opensearch
+graylog
+fluentbit
+postgres - pgpool
+pgadmin
+grafana
+prometheus
+alertmanager
+telegraf
+uptime-kuma
+mosquitto
+zigbee2mqtt
+homeassistant
+esphome
+node-red
+weather
+kopia
+unpoller
+konnected garage doors
+mitsubishi2mqtt
