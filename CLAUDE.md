@@ -11,8 +11,12 @@ This repository contains a collection of Python utility scripts for managing and
 - **graylog/**: Scripts for Graylog log management system maintenance
 - **hertzbeat/**: Tools for HertzBeat monitoring system management
 - **homeassistant/**: Utilities for Home Assistant smart home platform integration
+- **jira/**: JIRA project management and issue tracking utilities
 - **mqtt/**: MQTT client utilities for messaging and testing
+- **network/**: Network scanning and analysis tools
+- **unifi/**: UniFi network controller management utilities
 - **uptime-kuma/**: Utilities for Uptime Kuma monitoring service
+- **zigbee2mqtt/**: Zigbee device monitoring and management via MQTT
 
 Each service directory follows a consistent pattern:
 - `config.py`: Centralized configuration management using environment variables loaded via `python-dotenv`
@@ -62,11 +66,22 @@ Scripts use external Python libraries:
 - `pandas` for data processing (hertzbeat-management.py)
 - `python-dotenv` for environment variable loading
 - `paho-mqtt` for MQTT client operations
-- Standard library modules: `os`, `json`, `argparse`, `datetime`
+- `scapy` for network packet manipulation and analysis
+- Standard library modules: `os`, `json`, `argparse`, `datetime`, `smtplib`
+
+## File Naming Convention
+
+All Python scripts follow dash-separated naming for consistency:
+- `device-management.py` (not `device_management.py`)
+- `get-entities.py` (not `get_entities.py`)
+- `unifi-delete-offline-devices.py` (not `unifi_delete_offline_devices.py`)
 
 ## Common Operations
 
 - **Maintenance Mode**: Scripts typically provide functionality to enable/disable maintenance windows
 - **API Integration**: All scripts interact with their respective service APIs
+- **Network Operations**: Network scanning, device discovery, and packet analysis
+- **Device Management**: Monitor and manage IoT devices, network equipment, and smart home systems
+- **Monitoring & Alerting**: Real-time monitoring with email notifications and status reporting
 - **Logging**: Scripts output operational information and status updates
-- **Error Handling**: Scripts include basic error handling for API operations
+- **Error Handling**: Scripts include comprehensive error handling for all operations
