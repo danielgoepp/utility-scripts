@@ -8,6 +8,7 @@ A collection of Python utility scripts for managing and maintaining various moni
 - **Cloudflare** - DNS and certificate management utilities
 - **Graylog** - Log management system maintenance
 - **HertzBeat** - Monitoring system management tools
+- **Home Assistant** - Smart home platform integration utilities
 - **Uptime Kuma** - Uptime monitoring service utilities
 
 ## Quick Start
@@ -24,6 +25,7 @@ A collection of Python utility scripts for managing and maintaining various moni
    cp cloudflare/.env.example cloudflare/.env
    cp graylog/.env.example graylog/.env
    cp hertzbeat/.env.example hertzbeat/.env
+   cp homeassistant/.env.example homeassistant/.env
    cp uptime-kuma/.env.example uptime-kuma/.env
    ```
 

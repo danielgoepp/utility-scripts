@@ -10,6 +10,7 @@ This repository contains a collection of Python utility scripts for managing and
 - **cloudflare/**: Utilities for Cloudflare DNS and certificate management
 - **graylog/**: Scripts for Graylog log management system maintenance
 - **hertzbeat/**: Tools for HertzBeat monitoring system management
+- **homeassistant/**: Utilities for Home Assistant smart home platform integration
 - **uptime-kuma/**: Utilities for Uptime Kuma monitoring service
 
 Each service directory follows a consistent pattern:
