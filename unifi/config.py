@@ -1,0 +1,7 @@
+import os
+
+UNIFI_CONTROLLER = os.getenv("UNIFI_CONTROLLER")
+USERNAME = os.getenv("UNIFI_USERNAME")
+PASSWORD = os.getenv("UNIFI_PASSWORD")
+SITE = os.getenv("UNIFI_SITE")
+UNIFI_API_KEY = os.getenv("UNIFI_API_KEY")
