@@ -55,3 +55,6 @@ last_disabled.txt
 
 # Backups
 *_backup.json
+
+# Compiled Mac Applications
+*.app
