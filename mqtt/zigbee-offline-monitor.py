@@ -4,13 +4,17 @@ import paho.mqtt.client as mqtt
 import json
 import time
 import argparse
+from collections import defaultdict
 from config import MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, MQTT_CLIENT_ID
 
-offline_devices = {}  # {coordinator: [device_names]}
+MONITORING_TIME = 5  # Fixed monitoring time in seconds
+
+# Global state tracking
 device_count = 0
 coordinator_devices = {}  # {coordinator: [device_names]}
-retained_availability = {}  # {coordinator: {device_name: state}}
-all_device_topics = {}  # {coordinator: set(device_names)} - all devices seen in topics
+offline_devices = defaultdict(set)  # {coordinator: {device_names}}
+retained_availability = defaultdict(dict)  # {coordinator: {device_name: state}}
+all_device_topics = defaultdict(set)  # {coordinator: {device_names}}
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -27,7 +31,6 @@ def on_message(client, userdata, msg):
         try:
             info = json.loads(msg.payload.decode("utf-8"))
             # Extract device friendly names from the config
-            # devices is a dict with device IDs as keys
             if "config" in info and "devices" in info["config"]:
                 devices_dict = info["config"]["devices"]
                 if isinstance(devices_dict, dict):
@@ -42,52 +45,40 @@ def on_message(client, userdata, msg):
             print(f"Error parsing bridge/info for {coordinator}: {e}")
         return
 
-    # Track all device topics (skip bridge topics)
+    # Parse topic once
     parts = msg.topic.split("/")
-    if len(parts) >= 2 and not parts[1].startswith("bridge"):
-        coordinator = parts[0]
-        device_name = parts[1]
+    if len(parts) < 2:
+        return
 
-        # Track this device was seen in topics
-        if coordinator not in all_device_topics:
-            all_device_topics[coordinator] = set()
+    coordinator = parts[0]
+    device_name = parts[1]
+
+    # Track all device topics (skip bridge topics)
+    if not device_name.startswith("bridge"):
         all_device_topics[coordinator].add(device_name)
 
     # Track availability specifically for offline detection
-    if "/availability" in msg.topic:
-        parts = msg.topic.split("/")
-        coordinator = parts[0]
-        device_name = parts[1]
-        payload = msg.payload.decode("utf-8")
-        state = json.loads(payload).get("state", "")
+    if msg.topic.endswith("/availability"):
+        try:
+            payload = json.loads(msg.payload.decode("utf-8"))
+            state = payload.get("state", "")
 
-        # Track retained availability messages
-        if coordinator not in retained_availability:
-            retained_availability[coordinator] = {}
-        retained_availability[coordinator][device_name] = state
+            # Track retained availability messages
+            retained_availability[coordinator][device_name] = state
 
-        # Track offline devices by coordinator
-        if state == "offline":
-            if coordinator not in offline_devices:
-                offline_devices[coordinator] = []
-            if device_name not in offline_devices[coordinator]:
-                offline_devices[coordinator].append(device_name)
-        elif state == "online":
-            if (
-                coordinator in offline_devices
-                and device_name in offline_devices[coordinator]
-            ):
-                offline_devices[coordinator].remove(device_name)
-                # Clean up empty coordinator entries
-                if not offline_devices[coordinator]:
-                    del offline_devices[coordinator]
+            # Track offline devices by coordinator
+            if state == "offline":
+                offline_devices[coordinator].add(device_name)
+            elif state == "online":
+                offline_devices[coordinator].discard(device_name)
 
-        device_count += 1
+            device_count += 1
+        except (json.JSONDecodeError, KeyError):
+            pass
 
 
 def clear_stranded_devices(client, stranded_devices):
     """Clear stranded device retained messages by publishing empty payloads"""
-    total_cleared = 0
     topics_to_clear = []
 
     # Callback to collect all topics for stranded devices
@@ -98,13 +89,10 @@ def clear_stranded_devices(client, stranded_devices):
     original_callback = client.on_message
     client.on_message = collect_topics
 
-    # Subscribe to each stranded device's topic tree and collect all topics
+    # Subscribe to each stranded device's topic tree
     for coordinator, devices in stranded_devices.items():
         for device in devices:
-            # Subscribe to all subtopics under this device
-            device_topic = f"{coordinator}/{device}/#"
-            client.subscribe(device_topic)
-            # Also subscribe to the base device topic (without subtopics)
+            client.subscribe(f"{coordinator}/{device}/#")
             client.subscribe(f"{coordinator}/{device}")
 
     # Give time to receive all retained messages
@@ -125,9 +113,28 @@ def clear_stranded_devices(client, stranded_devices):
     for topic in topics_to_clear:
         print(f"Clearing retained message: {topic}")
         client.publish(topic, payload=None, retain=True)
-        total_cleared += 1
 
-    return total_cleared
+    return len(topics_to_clear)
+
+
+def print_section(title, items=None, item_formatter=None):
+    """Print a formatted section with optional items"""
+    print("\n" + "=" * 60)
+    print(title)
+    print("=" * 60)
+
+    if items:
+        total = sum(len(devs) for devs in items.values())
+        print(f"\nFound {total} {title.lower()}:\n")
+        for coordinator, devices in items.items():
+            print(f"{coordinator}:")
+            for device in sorted(devices):
+                if item_formatter:
+                    print(item_formatter(coordinator, device))
+                else:
+                    print(f"  • {device}")
+    else:
+        print(f"\n✓ No {title.lower()} found!")
 
 
 if __name__ == "__main__":
@@ -138,12 +145,6 @@ if __name__ == "__main__":
         "--remove-stranded",
         action="store_true",
         help="Remove stranded device retained messages",
-    )
-    parser.add_argument(
-        "--monitoring-time",
-        type=int,
-        default=5,
-        help="Time in seconds to monitor MQTT messages (default: 5)",
     )
     args = parser.parse_args()
 
@@ -160,56 +161,42 @@ if __name__ == "__main__":
     client.connect(MQTT_HOST, MQTT_PORT, 60)
     client.loop_start()
 
-    print(f"Monitoring for {args.monitoring_time} seconds...")
-    time.sleep(args.monitoring_time)
+    print(f"Monitoring for {MONITORING_TIME} seconds...")
+    time.sleep(MONITORING_TIME)
 
     client.loop_stop()
 
     # Find stranded devices - compare all topics seen vs coordinator's device list
-    stranded_devices = {}
-    for coordinator, seen_devices in all_device_topics.items():
-        if coordinator in coordinator_devices:
-            active_device_list = coordinator_devices[coordinator]
-            stranded = [
-                dev for dev in seen_devices if dev not in active_device_list
-            ]
-            if stranded:
-                stranded_devices[coordinator] = stranded
+    stranded_devices = {
+        coordinator: [
+            dev
+            for dev in seen_devices
+            if dev not in coordinator_devices.get(coordinator, [])
+        ]
+        for coordinator, seen_devices in all_device_topics.items()
+        if coordinator in coordinator_devices
+    }
+    # Remove empty entries
+    stranded_devices = {k: v for k, v in stranded_devices.items() if v}
 
-    # Print results
-    print("\n" + "=" * 60)
-    print("OFFLINE DEVICES")
-    print("=" * 60)
-
-    if offline_devices:
-        total_offline = sum(len(devs) for devs in offline_devices.values())
-        print(f"\nFound {total_offline} offline device(s):\n")
-        for coordinator, devices in offline_devices.items():
-            print(f"{coordinator}:")
-            for device in devices:
-                print(f"  • {device}")
-    else:
-        print("\n✓ All devices are online!")
-
+    # Print offline devices
+    print_section("OFFLINE DEVICES", offline_devices if offline_devices else None)
     print(f"\nTotal devices checked: {device_count}")
 
-    # Print stranded devices
-    print("\n" + "=" * 60)
-    print("STRANDED DEVICES (retained messages, not in coordinator)")
-    print("=" * 60)
-
+    # Print stranded devices with availability state
     if stranded_devices:
-        total_stranded = sum(len(devs) for devs in stranded_devices.values())
-        print(f"\nFound {total_stranded} stranded device(s):\n")
-        for coordinator, devices in stranded_devices.items():
-            print(f"{coordinator}:")
-            for device in devices:
-                # Show availability state if we have it
-                if coordinator in retained_availability and device in retained_availability[coordinator]:
-                    state = retained_availability[coordinator][device]
-                    print(f"  • {device} (availability: {state})")
-                else:
-                    print(f"  • {device}")
+
+        def format_stranded(coordinator, device):
+            state = retained_availability.get(coordinator, {}).get(device, "")
+            if state:
+                return f"  • {device} (availability: {state})"
+            return f"  • {device}"
+
+        print_section(
+            "STRANDED DEVICES (retained messages, not in coordinator)",
+            stranded_devices,
+            format_stranded,
+        )
 
         # Remove stranded devices if requested
         if args.remove_stranded:
@@ -219,10 +206,10 @@ if __name__ == "__main__":
 
             cleared = clear_stranded_devices(client, stranded_devices)
 
-            print(f"\n✓ Cleared {cleared} stranded device(s)")
+            print(f"\n✓ Cleared {cleared} retained message(s)")
             print("=" * 60)
     else:
-        print("\n✓ No stranded devices found!")
+        print_section("STRANDED DEVICES (retained messages, not in coordinator)", None)
 
     print("=" * 60)
 
