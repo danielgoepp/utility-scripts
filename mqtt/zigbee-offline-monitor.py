@@ -1,5 +1,29 @@
 #!/usr/bin/env python3
 
+"""
+Zigbee Offline Device Monitor
+
+This script monitors Zigbee2MQTT coordinators to detect and manage offline devices and
+stranded retained MQTT messages. It connects to multiple Zigbee2MQTT coordinators via
+MQTT, monitors device availability status, and identifies devices that no longer exist
+in the coordinator configuration but still have retained messages in MQTT.
+
+Key Features:
+- Monitors availability status for all Zigbee devices across multiple coordinators
+- Identifies offline devices (devices with "offline" availability state)
+- Detects stranded devices (retained MQTT messages for devices removed from coordinator)
+- Optional cleanup mode (--remove-stranded) to clear retained messages from stranded devices
+
+Usage:
+    python zigbee-offline-monitor.py              # Monitor and prompt to remove stranded devices
+    python zigbee-offline-monitor.py --remove-stranded  # Automatically remove stranded devices
+    python zigbee-offline-monitor.py --no-interactive  # Monitor only, no prompts or removal
+
+Configuration:
+    Requires environment variables in .env (loaded via config.py):
+    - MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, MQTT_CLIENT_ID
+"""
+
 import paho.mqtt.client as mqtt
 import json
 import time
@@ -7,7 +31,7 @@ import argparse
 from collections import defaultdict
 from config import MQTT_HOST, MQTT_PORT, MQTT_USERNAME, MQTT_PASSWORD, MQTT_CLIENT_ID
 
-MONITORING_TIME = 5  # Fixed monitoring time in seconds
+MONITORING_TIME = 5
 
 # Global state tracking
 device_count = 0
@@ -81,9 +105,19 @@ def clear_stranded_devices(client, stranded_devices):
     """Clear stranded device retained messages by publishing empty payloads"""
     topics_to_clear = []
 
+    # Build set of valid topic prefixes for filtering
+    valid_prefixes = set()
+    for coordinator, devices in stranded_devices.items():
+        for device in devices:
+            valid_prefixes.add(f"{coordinator}/{device}/")
+            valid_prefixes.add(f"{coordinator}/{device}")
+
     # Callback to collect all topics for stranded devices
     def collect_topics(_client, _userdata, msg):
-        topics_to_clear.append(msg.topic)
+        # Only collect topics that match our stranded devices
+        topic = msg.topic
+        if any(topic == prefix or topic.startswith(prefix + "/") for prefix in valid_prefixes):
+            topics_to_clear.append(topic)
 
     # Temporarily replace the message callback
     original_callback = client.on_message
@@ -144,7 +178,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--remove-stranded",
         action="store_true",
-        help="Remove stranded device retained messages",
+        help="Automatically remove stranded device retained messages without prompting",
+    )
+    parser.add_argument(
+        "--no-interactive",
+        action="store_true",
+        help="Disable interactive prompts (monitor only, no removal)",
     )
     args = parser.parse_args()
 
@@ -198,8 +237,23 @@ if __name__ == "__main__":
             format_stranded,
         )
 
-        # Remove stranded devices if requested
+        # Determine if we should remove stranded devices
+        should_remove = False
+
         if args.remove_stranded:
+            # Automatic mode - remove without prompting
+            should_remove = True
+        elif not args.no_interactive:
+            # Interactive mode - prompt the user
+            try:
+                response = input("\nRemove stranded devices? [y/N]: ").strip().lower()
+                should_remove = response in ['y', 'yes']
+            except (EOFError, KeyboardInterrupt):
+                print("\nSkipping removal.")
+                should_remove = False
+
+        # Remove stranded devices if confirmed
+        if should_remove:
             print("\n" + "=" * 60)
             print("REMOVING STRANDED DEVICES")
             print("=" * 60 + "\n")
