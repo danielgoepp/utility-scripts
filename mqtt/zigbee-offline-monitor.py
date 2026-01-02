@@ -281,6 +281,13 @@ if __name__ == "__main__":
         if stranded:
             stranded_health[coordinator] = stranded
 
+    # Move "Coordinator" from offline to stranded - if coordinator were truly offline,
+    # we wouldn't receive any messages. An offline coordinator entry is stranded data.
+    for coordinator, devices in offline_devices.items():
+        if "Coordinator" in devices:
+            devices.discard("Coordinator")
+            stranded_devices.setdefault(coordinator, []).append("Coordinator")
+
     # Print offline devices (only show coordinators that have offline devices)
     offline_with_devices = {k: v for k, v in offline_devices.items() if v}
     print_section("OFFLINE DEVICES", offline_with_devices if offline_with_devices else None)

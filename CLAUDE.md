@@ -46,8 +46,9 @@ SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
 
 ## Script Execution
 
-All Python scripts are designed to be run directly:
+All Python scripts are designed to be run directly. **Always activate the virtual environment first:**
 ```bash
+source .venv/bin/activate
 python3 <service>/<script-name>.py
 ```
 
@@ -55,8 +56,9 @@ Most scripts include command-line argument parsing and can be run with `-h` for 
 
 ## Dependencies
 
-Install dependencies with:
+Install dependencies into the virtual environment:
 ```bash
+source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
