@@ -19,6 +19,7 @@ This repository contains a collection of Python utility scripts for managing and
 - **zigbee2mqtt/**: Zigbee device monitoring and management via MQTT
 
 Each service directory follows a consistent pattern:
+
 - `config.py`: Centralized configuration management using environment variables loaded via `python-dotenv`
 - `*-maintenance.py`: Main script for service maintenance operations
 - `.env`: Environment variables file (gitignored)
@@ -27,6 +28,7 @@ Each service directory follows a consistent pattern:
 ## Configuration Pattern
 
 All scripts use a standardized configuration approach:
+
 - Environment variables stored in `.env` files for sensitive data (API tokens, URLs, credentials)
 - Centralized `config.py` files that load environment variables using `python-dotenv`
 - Scripts import configuration values from their respective `config.py` files
@@ -34,6 +36,7 @@ All scripts use a standardized configuration approach:
 - No hardcoded credentials or URLs in the scripts
 
 Example `config.py` structure:
+
 ```python
 import os
 from dotenv import load_dotenv
@@ -47,6 +50,7 @@ SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
 ## Script Execution
 
 All Python scripts are designed to be run directly. **Always activate the virtual environment first:**
+
 ```bash
 source .venv/bin/activate
 python3 <service>/<script-name>.py
@@ -57,12 +61,14 @@ Most scripts include command-line argument parsing and can be run with `-h` for 
 ## Dependencies
 
 Install dependencies into the virtual environment:
+
 ```bash
 source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
 Scripts use external Python libraries:
+
 - `requests` for HTTP API calls
 - `uptime-kuma-api` for Uptime Kuma integration
 - `pandas` for data processing (hertzbeat-management.py)
@@ -74,6 +80,7 @@ Scripts use external Python libraries:
 ## File Naming Convention
 
 All Python scripts follow dash-separated naming for consistency:
+
 - `device-management.py` (not `device_management.py`)
 - `get-entities.py` (not `get_entities.py`)
 - `unifi-delete-offline-devices.py` (not `unifi_delete_offline_devices.py`)
