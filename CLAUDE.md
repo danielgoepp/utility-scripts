@@ -15,7 +15,7 @@ This repository contains a collection of Python utility scripts for managing and
 - **mqtt/**: MQTT client utilities for messaging and testing
 - **network/**: Network scanning and analysis tools
 - **unifi/**: UniFi network controller management utilities
-- **uptime-kuma/**: Utilities for Uptime Kuma monitoring service
+- **uptime-kuma/**: Utilities for Uptime Kuma monitoring service (maintenance mode, monitor import from Excel)
 - **zigbee2mqtt/**: Zigbee device monitoring and management via MQTT
 
 Each service directory follows a consistent pattern:
