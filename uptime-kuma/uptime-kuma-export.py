@@ -10,7 +10,7 @@ import re
 import pandas as pd
 
 
-OUTPUT_FILE = "Uptime Kuma Monitors.xlsx"
+OUTPUT_FILE = "/Users/dang/backups/uptime-kuma/Uptime Kuma Monitors.xlsx"
 
 
 def connect_api():
