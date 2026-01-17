@@ -9,7 +9,7 @@ This directory contains Python scripts for monitoring and managing Zigbee device
 Collects and displays Zigbee device information from the Zigbee2MQTT bridge via MQTT.
 
 **Features:**
-- Connects to MQTT broker and subscribes to `zigbee15/bridge/info` topic
+- Connects to MQTT broker and subscribes to the bridge info topic
 - Retrieves device configuration including device ID, friendly name, type, and model
 - Supports multiple output formats: table, CSV, JSON
 - Optional detailed view showing all device properties
@@ -25,8 +25,8 @@ python3 z2m-get-devices.py [--format table|csv|json] [--details] [--timeout SECO
 Monitors Zigbee devices for offline status and optionally sends email notifications.
 
 **Features:**
-- Scans multiple Zigbee2MQTT bridges (zigbee11, zigbee15) for offline devices
-- Subscribes to `+/availability` topics to detect device status
+- Scans multiple Zigbee2MQTT bridges (zigbee11 and zigbee15) for offline devices
+- Subscribes to availability topics on both bridges to detect device status
 - Email notification support when offline devices are found
 - Multiple output formats: table, CSV, JSON
 - Quiet mode for scripting/automation
