@@ -17,3 +17,7 @@ TO_EMAIL = os.getenv("TO_EMAIL")
 
 # File paths
 STATE_FILE_PATH = os.getenv("STATE_FILE_PATH", "/tmp/state.json")
+
+# Zigbee2MQTT data directories
+Z2M_BASE_PATH = os.getenv("Z2M_BASE_PATH", "/Volumes/k3s-prod-data/zigbee2mqtt")
+Z2M_INSTANCES = os.getenv("Z2M_INSTANCES", "11,15").split(",")
