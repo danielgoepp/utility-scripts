@@ -2,14 +2,30 @@
 
 A collection of Python utility scripts for managing and maintaining various monitoring and infrastructure services.
 
+## Maintenance Mode (ARCHIVED)
+
+**The maintenance mode scripts in this repository are archived and kept for reference only.**
+
+The canonical implementation for maintenance mode is in the Ansible repository:
+
+```bash
+# Enable maintenance mode (mutes all alerts)
+ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=enable
+
+# Disable maintenance mode (unmutes all alerts)
+ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=disable
+
+# Target specific systems
+ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=enable -e target=graylog
+```
+
+The Ansible implementation provides a unified interface for all alert systems, AWX integration, and vault-based credential management.
+
 ## Services
 
-- **AlertManager** - Prometheus AlertManager silence management
 - **Cloudflare** - DNS and certificate management utilities
-- **Graylog** - Log management system maintenance
-- **HertzBeat** - Monitoring system management tools
 - **Home Assistant** - Smart home platform integration utilities
-- **Uptime Kuma** - Uptime monitoring service utilities
+- **Uptime Kuma** - Export/import utilities (maintenance scripts archived)
 
 ## Quick Start
 
@@ -21,10 +37,7 @@ A collection of Python utility scripts for managing and maintaining various moni
 2. **Configure environment variables:**
    ```bash
    # Copy example files and edit with your values
-   cp alertmanager/.env.example alertmanager/.env
    cp cloudflare/.env.example cloudflare/.env
-   cp graylog/.env.example graylog/.env
-   cp hertzbeat/.env.example hertzbeat/.env
    cp homeassistant/.env.example homeassistant/.env
    cp uptime-kuma/.env.example uptime-kuma/.env
    ```
@@ -32,16 +45,15 @@ A collection of Python utility scripts for managing and maintaining various moni
 3. **Run scripts:**
    ```bash
    # Examples
-   python3 alertmanager/alertmanager-maintenance.py --mute --duration 4
-   python3 graylog/graylog-maintenance.py --mute
-   python3 hertzbeat/hertzbeat-maintenance.py --list
+   python3 cloudflare/cf_clear_stale_acme.py
+   python3 uptime-kuma/uptime-kuma-export.py
    ```
 
 ## Architecture
 
 Each service directory follows a consistent pattern:
 
-```
+```text
 service/
 ├── config.py          # Environment variable configuration
 ├── service-script.py  # Main functionality
@@ -53,39 +65,32 @@ All scripts use centralized configuration management with `python-dotenv` for se
 
 ## Available Scripts
 
-### AlertManager
-- `alertmanager-maintenance.py` - Create/remove maintenance silences
-
 ### Cloudflare
 - `cf_clear_stale_acme.py` - Clean up stale ACME challenge records
 
-### Graylog
-- `graylog-maintenance.py` - Mute/unmute event definitions
-
-### HertzBeat
-- `hertzbeat-maintenance.py` - Manage alert silences
-- `hertzbeat-management.py` - Monitor management utilities
-
 ### Uptime Kuma
-- `uptime-kuma-maintenance.py` - Maintenance window management
+- `uptime-kuma-export.py` - Export monitor configuration
+- `uptime-kuma-import.py` - Import monitor configuration
+
+### Archived (Reference Only)
+
+The following maintenance scripts are archived. Use the Ansible playbook instead:
+
+- `alertmanager/alertmanager-maintenance.py`
+- `graylog/graylog-maintenance.py`
+- `uptime-kuma/uptime-kuma-maintenance.py`
 
 ## Usage Examples
 
 ```bash
-# Mute alerts for 2 hours (default)
-python3 alertmanager/alertmanager-maintenance.py --mute
-
-# Mute alerts for 4 hours
-python3 alertmanager/alertmanager-maintenance.py --mute --duration 4
-
-# Remove all silences
-python3 alertmanager/alertmanager-maintenance.py --unmute
-
-# List HertzBeat silences
-python3 hertzbeat/hertzbeat-maintenance.py --list
-
 # Clean Cloudflare ACME records
 python3 cloudflare/cf_clear_stale_acme.py
+
+# Export Uptime Kuma monitors
+python3 uptime-kuma/uptime-kuma-export.py
+
+# Import Uptime Kuma monitors
+python3 uptime-kuma/uptime-kuma-import.py
 ```
 
 Use `--help` with any script for detailed usage information.

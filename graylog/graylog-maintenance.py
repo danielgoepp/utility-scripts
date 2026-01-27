@@ -1,3 +1,20 @@
+"""
+ARCHIVED - DO NOT ACTIVELY USE OR MAINTAIN
+
+This script is kept for reference only. The canonical implementation is in the
+Ansible repository: ansible/playbooks/ops-maintenance-mode.yaml
+
+The Ansible implementation provides:
+- Unified interface for all alert systems (Graylog, Alertmanager, Uptime Kuma)
+- AWX/automation workflow integration
+- Vault-based credential management
+- Persistent state tracking via [ANSIBLE_MUTED] markers in event descriptions
+
+For maintenance mode operations, use:
+    ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=enable
+    ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=disable
+"""
+
 import argparse
 import requests
 import os

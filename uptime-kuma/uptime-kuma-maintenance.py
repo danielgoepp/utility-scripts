@@ -1,3 +1,20 @@
+"""
+ARCHIVED - DO NOT ACTIVELY USE OR MAINTAIN
+
+This script is kept for reference only. The canonical implementation is in the
+Ansible repository: ansible/playbooks/ops-maintenance-mode.yaml
+
+The Ansible implementation provides:
+- Unified interface for all alert systems (Graylog, Alertmanager, Uptime Kuma)
+- AWX/automation workflow integration
+- Vault-based credential management
+- Full enable/disable functionality with proper cleanup
+
+For maintenance mode operations, use:
+    ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=enable
+    ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=disable
+"""
+
 import json
 
 from uptime_kuma_api import UptimeKumaApi, MaintenanceStrategy
