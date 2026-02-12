@@ -3,4 +3,5 @@ pandas
 python-dotenv
 paho-mqtt
 scapy
-# uptime-kuma-api
+uptime-kuma-api
+pyobjc-framework-EventKit
