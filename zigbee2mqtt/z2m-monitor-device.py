@@ -105,10 +105,7 @@ def main():
 
         last_state = data
 
-    client = paho.Client(
-        client_id="z2m-device-monitor",
-        callback_api_version=paho.CallbackAPIVersion.VERSION2,
-    )
+    client = paho.Client(client_id="z2m-device-monitor")
     client.username_pw_set(
         username=config.MQTT_USERNAME, password=config.MQTT_PASSWORD
     )
@@ -116,6 +113,9 @@ def main():
     client.on_message = on_message
 
     try:
+        if not config.MQTT_HOST or not config.MQTT_PORT:
+            print("Error: MQTT_HOST and MQTT_PORT must be configured in .env", file=sys.stderr)
+            sys.exit(1)
         client.connect(config.MQTT_HOST, config.MQTT_PORT)
         print(f"Monitoring '{args.device}' on {args.bridge} (Ctrl+C to stop)...")
         client.loop_forever()
