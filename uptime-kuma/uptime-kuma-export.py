@@ -61,6 +61,7 @@ def extract_monitor_data(monitor, group_map):
         "Certificate Expiry Check": monitor.get("expiryNotification", False),
         "Upside Down": monitor.get("upsideDown", False),
         "Group": group_map.get(monitor.get("parent"), ""),
+        "Notifications Enabled": bool(monitor.get("notificationIDList")),
         "Resolver Server": monitor.get("dns_resolve_server") if monitor_type == "dns" else "",
         "Record Type": monitor.get("dns_resolve_type") if monitor_type == "dns" else "",
     }
