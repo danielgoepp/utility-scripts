@@ -121,11 +121,11 @@ def send_alerts(all_results, instance_errors):
                 "alertname": "KopiaBackupUnhealthy",
                 "instance": instance_name,
                 "source": label,
-                "severity": severity or "none",
             }
             annotations = {
                 "summary": f"Kopia backup issue on {instance_name}: {label}",
                 "description": message,
+                "severity": severity or "none",
             }
             if severity:
                 alerts.append({"labels": labels, "annotations": annotations, "startsAt": now})
