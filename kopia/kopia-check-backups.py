@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 
 import requests
 from config import (
+    ALERTMANAGER_URL,
     KOPIA_INSTANCES,
     KOPIA_MAX_SNAPSHOT_AGE_HOURS,
     KOPIA_VERIFY_TLS,
@@ -108,6 +109,53 @@ def check_sources(sources, max_age_hours):
     return results
 
 
+def send_alerts(all_results, instance_errors):
+    """Send alerts to Alertmanager. Fires for errors/warnings, resolves for healthy sources."""
+    now = datetime.now(timezone.utc).isoformat()
+    alerts = []
+
+    for instance_name, results in all_results.items():
+        for label, status, message in results:
+            severity = {"ERROR": "critical", "WARNING": "warning"}.get(status)
+            labels = {
+                "alertname": "KopiaBackupUnhealthy",
+                "instance": instance_name,
+                "source": label,
+                "severity": severity or "none",
+            }
+            annotations = {
+                "summary": f"Kopia backup issue on {instance_name}: {label}",
+                "description": message,
+            }
+            if severity:
+                alerts.append({"labels": labels, "annotations": annotations, "startsAt": now})
+            else:
+                alerts.append({"labels": labels, "annotations": annotations, "endsAt": now})
+
+    for instance_name, error in instance_errors.items():
+        alerts.append({
+            "labels": {
+                "alertname": "KopiaInstanceUnreachable",
+                "instance": instance_name,
+                "severity": "critical",
+            },
+            "annotations": {
+                "summary": f"Kopia instance {instance_name} is unreachable",
+                "description": error,
+            },
+            "startsAt": now,
+        })
+
+    if not alerts:
+        return
+
+    resp = requests.post(f"{ALERTMANAGER_URL}/api/v2/alerts", json=alerts)
+    resp.raise_for_status()
+    firing = sum(1 for a in alerts if "startsAt" in a)
+    resolved = sum(1 for a in alerts if "endsAt" in a)
+    print(f"Alertmanager: sent {firing} firing, {resolved} resolved")
+
+
 def check_instance(instance, max_age_hours):
     """Check a single Kopia instance. Returns (results, source_count)."""
     session = get_control_session(instance)
@@ -136,6 +184,10 @@ def main():
     parser.add_argument(
         "--instance", "-i", action="append",
         help="Check only specific instance(s) (can be repeated)",
+    )
+    parser.add_argument(
+        "--alert", action="store_true",
+        help="Send alerts to Alertmanager (requires ALERTMANAGER_URL in .env)",
     )
     args = parser.parse_args()
 
@@ -210,6 +262,17 @@ def main():
         print(f"Summary: {len(instances_to_check)} instance(s), {total_sources} source(s): "
               f"{healthy} healthy, {warnings} warning(s), {errors} error(s), "
               f"{len(instance_errors)} unreachable")
+
+    # Send alerts to Alertmanager
+    if args.alert:
+        if not ALERTMANAGER_URL:
+            print("Error: ALERTMANAGER_URL must be set in .env to use --alert")
+            sys.exit(2)
+        try:
+            send_alerts(all_results, instance_errors)
+        except requests.RequestException as e:
+            print(f"Error: Failed to send alerts to Alertmanager: {e}")
+            sys.exit(2)
 
     has_errors = any(s == "ERROR" for results in all_results.values() for _, s, _ in results) or instance_errors
     sys.exit(1 if has_errors else 0)

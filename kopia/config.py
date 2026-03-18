@@ -12,6 +12,9 @@ KOPIA_MAX_SNAPSHOT_AGE_HOURS = int(os.getenv("KOPIA_MAX_SNAPSHOT_AGE_HOURS", "26
 # TLS verification (set to "false" for self-signed certs)
 KOPIA_VERIFY_TLS = os.getenv("KOPIA_VERIFY_TLS", "true").lower() != "false"
 
+# Alertmanager integration (optional)
+ALERTMANAGER_URL = os.getenv("ALERTMANAGER_URL")
+
 
 def get_instance_config(name):
     """Load configuration for a named Kopia instance.
