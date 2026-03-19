@@ -17,6 +17,9 @@ ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=disab
 
 # Target specific systems
 ansible-playbook playbooks/ops-maintenance-mode.yaml -e maintenance_action=enable -e target=graylog
+
+# Silence a single Alertmanager alert (default: 1 hour)
+ansible-playbook playbooks/ops-maintenance-mode-single.yaml -e 'alert_name="Node Exporter - CPU High"'
 ```
 
 The Ansible implementation provides a unified interface for all alert systems, AWX integration, and vault-based credential management.
