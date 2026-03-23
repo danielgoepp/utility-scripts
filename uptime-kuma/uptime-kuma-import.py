@@ -75,6 +75,7 @@ def build_monitor_config(row):
         "type": monitor_type,
         "name": row.get("name"),
         "interval": 60,
+        "maxretries": 1,
     }
 
     # Type-specific configuration
@@ -91,7 +92,6 @@ def build_monitor_config(row):
 
         config.update({
             "url": url,
-            "maxretries": 3,
             "accepted_statuscodes": ["200-299"],
             "ignoreTls": protocol == "http",
         })
