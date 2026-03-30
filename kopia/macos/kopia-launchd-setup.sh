@@ -15,12 +15,12 @@
 # =============================================================================
 
 set -euo pipefail
+setopt KSH_ARRAYS  # 0-based array indexing
 
 KOPIA_CONFIG_DIR="$HOME/Library/Application Support/kopia"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 LOG_DIR="$HOME/Library/Logs"
 WRAPPER_DIR="$HOME/.local/bin"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Schedule hours and per-repo stagger offsets (minutes)
 SCHEDULE_HOURS=(9 13 17 21)
@@ -108,7 +108,7 @@ GENERATED_CONFIG_FILES=()
 GENERATED_CONFIG_NAMES=()
 GENERATED_SLUGS=()
 
-for i in "${!CONFIG_FILES[@]}"; do
+for (( i=0; i<${#CONFIG_FILES[@]}; i++ )); do
     CONFIG_FILE="${CONFIG_FILES[$i]}"
 
     # Use description from config JSON as the friendly name, fall back to filename
@@ -234,7 +234,7 @@ launchctl list | grep com.kopia || echo "WARNING: Agents not found in launchctl 
 echo ""
 read -rp "==> Run a test backup NOW against all repos? [y/N] " RUN_TEST
 if [[ "$RUN_TEST" =~ ^[Yy]$ ]]; then
-    for i in "${!GENERATED_CONFIG_FILES[@]}"; do
+    for (( i=0; i<${#GENERATED_CONFIG_FILES[@]}; i++ )); do
         echo ""
         echo "--- Starting test snapshot (${GENERATED_CONFIG_NAMES[$i]}) ---"
         "$KOPIA_BIN" snapshot create --all \
@@ -249,7 +249,7 @@ echo ""
 echo "==> Done!"
 echo ""
 echo "    Agents installed:"
-for i in "${!GENERATED_SLUGS[@]}"; do
+for (( i=0; i<${#GENERATED_SLUGS[@]}; i++ )); do
     echo "      com.kopia.backup.${GENERATED_SLUGS[$i]}  →  :${STAGGER_MINUTES[$i]} past 9am/1pm/5pm/9pm"
 done
 echo ""
