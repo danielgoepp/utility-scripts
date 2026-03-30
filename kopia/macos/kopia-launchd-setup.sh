@@ -232,7 +232,8 @@ launchctl list | grep com.kopia || echo "WARNING: Agents not found in launchctl 
 
 # ── Optional: run a test backup now ──────────────────────────────────────
 echo ""
-read -rp "==> Run a test backup NOW against all repos? [y/N] " RUN_TEST
+echo -n "==> Run a test backup NOW against all repos? [y/N] "
+read -r RUN_TEST
 if [[ "$RUN_TEST" =~ ^[Yy]$ ]]; then
     for (( i=0; i<${#GENERATED_CONFIG_FILES[@]}; i++ )); do
         echo ""
