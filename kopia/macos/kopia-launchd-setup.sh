@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # =============================================================================
 # kopia-launchd-setup.sh
 # Dynamically sets up launchd agents for all kopia repositories found on
@@ -65,7 +65,10 @@ mkdir -p "$WRAPPER_DIR"
 echo ""
 echo "==> Discovering kopia repositories in $KOPIA_CONFIG_DIR ..."
 
-mapfile -t CONFIG_FILES < <(find "$KOPIA_CONFIG_DIR" -maxdepth 1 -name "*.config" -type f | sort)
+CONFIG_FILES=()
+while IFS= read -r f; do
+    CONFIG_FILES+=("$f")
+done < <(find "$KOPIA_CONFIG_DIR" -maxdepth 1 -name "*.config" -type f | sort)
 
 if [[ ${#CONFIG_FILES[@]} -eq 0 ]]; then
     echo "ERROR: No kopia config files found in $KOPIA_CONFIG_DIR"

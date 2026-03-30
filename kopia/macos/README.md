@@ -35,6 +35,14 @@ The following are generated automatically by the setup script and are not tracke
 
 ## Setup
 
+**Run directly on any Mac:**
+
+```bash
+zsh <(curl -fsSL https://raw.githubusercontent.com/danielgoepp/utility-scripts/main/kopia/macos/kopia-launchd-setup.sh)
+```
+
+**Or clone the repo and run locally:**
+
 ```bash
 chmod +x kopia-launchd-setup.sh
 ./kopia-launchd-setup.sh
