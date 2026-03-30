@@ -9,11 +9,14 @@ This repository contains a collection of Python utility scripts for managing and
 - **alertmanager/**: Scripts for managing Prometheus AlertManager silences and maintenance windows
 - **cloudflare/**: Utilities for Cloudflare DNS and certificate management
 - **graylog/**: Scripts for Graylog log management system maintenance
-- **hertzbeat/**: Tools for HertzBeat monitoring system management
+- **grafana/**: Utilities for Grafana datasource management
 - **homeassistant/**: Utilities for Home Assistant smart home platform integration
 - **jira/**: JIRA project management and issue tracking utilities
+- **kopia/**: Backup health monitoring for Kopia backup instances
+- **macos/**: macOS utilities including SMB mount automation and Reminders export
 - **mqtt/**: MQTT client utilities for messaging and testing
 - **network/**: Network scanning and analysis tools
+- **opensearch/**: OpenSearch index management (field counts, top queries purge)
 - **unifi/**: UniFi network controller management utilities
 - **uptime-kuma/**: Utilities for Uptime Kuma monitoring service (maintenance mode, monitor import from Excel)
 - **zigbee2mqtt/**: Zigbee device monitoring and management via MQTT
@@ -71,7 +74,7 @@ Scripts use external Python libraries:
 
 - `requests` for HTTP API calls
 - `uptime-kuma-api` for Uptime Kuma integration
-- `pandas` for data processing (hertzbeat-management.py)
+- `pandas` for data processing
 - `python-dotenv` for environment variable loading
 - `paho-mqtt` for MQTT client operations
 - `scapy` for network packet manipulation and analysis
