@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+    <key>Label</key>
+    <string>com.kopia.backup.b2</string>
+
+    <!-- ============================================================
+         Kopia B2 (Backblaze S3) — Scheduled Backup Agent
+         Repo: GoeppKopiaBackup @ s3.us-west-001.backblazeb2.com
+         Config: ~/Library/Application Support/kopia/repository-1680706950621.config
+
+         Staggered 15 minutes after the SSD job to avoid running
+         both snapshot jobs simultaneously.
+         ============================================================ -->
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Wrapper script adds timestamps to log output.
+             Update KOPIA_PATH_PLACEHOLDER inside run-kopia-b2.sh before use. -->
+        <string>/bin/bash</string>
+        <string>/Users/dang/Documents/Development/utility-scripts/kopia/macos/run-kopia-b2.sh</string>
+    </array>
+
+    <!-- 15 minutes after SSD job: 9:15am, 1:15pm, 5:15pm, 9:15pm -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>13</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>17</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>21</integer>
+            <key>Minute</key><integer>15</integer>
+        </dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/Users/dang/Library/Logs/kopia-b2.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/dang/Library/Logs/kopia-b2.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+</dict>
+</plist>

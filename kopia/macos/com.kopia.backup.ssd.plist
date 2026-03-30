@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+    <key>Label</key>
+    <string>com.kopia.backup.ssd</string>
+
+    <!-- ============================================================
+         Kopia SSD (Repository Server) — Scheduled Backup Agent
+         Repo: kopia-ssd.goepp.net:51515
+         Config: ~/Library/Application Support/kopia/repository.config
+
+         Uses StartCalendarInterval so launchd automatically fires
+         any missed runs the next time the Mac wakes from sleep.
+         ============================================================ -->
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Wrapper script adds timestamps to log output. -->
+        <string>/bin/bash</string>
+        <string>/Users/dang/Documents/Development/utility-scripts/kopia/macos/run-kopia-ssd.sh</string>
+    </array>
+
+    <!-- Fire at 9am, 1pm, 5pm, 9pm — launchd catches up missed runs on wake -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>13</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>17</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <dict>
+            <key>Hour</key><integer>21</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+    </array>
+
+    <!-- Stagger B2 job by 15 min to avoid simultaneous resource contention -->
+
+    <key>StandardOutPath</key>
+    <string>/Users/dang/Library/Logs/kopia-ssd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/dang/Library/Logs/kopia-ssd.log</string>
+
+    <!-- Don't run immediately on load — wait for the next scheduled time -->
+    <key>RunAtLoad</key>
+    <false/>
+
+</dict>
+</plist>
