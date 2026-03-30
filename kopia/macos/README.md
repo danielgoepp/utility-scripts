@@ -2,13 +2,9 @@
 
 KopiaUI does not natively catch up missed backups when a Mac wakes from sleep. The solution is to disable scheduling in the KopiaUI policy and instead use launchd agents with `StartCalendarInterval`, which automatically fires missed runs the next time the Mac is awake.
 
-Two agents are used — one per repository — staggered 15 minutes apart to avoid simultaneous resource contention.
+One agent is created per repository, staggered 15 minutes apart to avoid simultaneous resource contention.
 
-**Repositories:**
-- `com.kopia.backup.ssd` → Local Kopia Repository Server
-- `com.kopia.backup.b2` → Backblaze B2
-
-**Schedule:** 9:00am, 1:00pm, 5:00pm, 9:00pm (B2 runs 15 min later)
+**Schedule:** 9:00am, 1:00pm, 5:00pm, 9:00pm (staggered per repo)
 
 ## Why StartCalendarInterval (not cron)
 
@@ -18,29 +14,26 @@ Unlike cron, launchd's `StartCalendarInterval` tracks missed jobs. If the Mac wa
 
 - KopiaUI installed and repositories connected
 - Scheduling **disabled** in the Kopia policy for each repo (let launchd own the schedule)
-- `kopia` CLI binary available (bundled inside KopiaUI or via Homebrew)
+- `kopia` CLI binary available via Homebrew (recommended) or bundled inside KopiaUI
 
 ```bash
-# Find the kopia binary bundled with KopiaUI
-find /Applications/KopiaUI.app -name "kopia" -type f
-
-# Or install via Homebrew
 brew install kopia
 ```
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `kopia-launchd-setup.sh` | One-time (or idempotent) setup script — installs and loads agents |
-| `com.kopia.backup.ssd.plist` | Launchd agent definition for SSD repo |
-| `com.kopia.backup.b2.plist` | Launchd agent definition for B2 repo |
-| `run-kopia-ssd.sh` | Wrapper script — adds timestamps to SSD log output |
-| `run-kopia-b2.sh` | Wrapper script — adds timestamps to B2 log output |
+| File                     | Purpose                                              |
+|--------------------------|------------------------------------------------------|
+| `kopia-launchd-setup.sh` | Setup script — run this to install or update agents  |
+
+The following are generated automatically by the setup script and are not tracked in git:
+
+| Generated file                                         | Purpose                                                 |
+|--------------------------------------------------------|---------------------------------------------------------|
+| `~/.local/bin/run-kopia-<name>.sh`                     | Wrapper script per repo — adds timestamps to log output |
+| `~/Library/LaunchAgents/com.kopia.backup.<name>.plist` | Launchd agent per repo                                  |
 
 ## Setup
-
-Place all files in the same directory, then run:
 
 ```bash
 chmod +x kopia-launchd-setup.sh
@@ -48,19 +41,28 @@ chmod +x kopia-launchd-setup.sh
 ```
 
 The script will:
-1. Auto-detect the `kopia` binary
-2. Install plists to `~/Library/LaunchAgents/`
-3. Validate and load the agents
-4. Optionally run a test snapshot immediately
 
-> **Note:** The kopia binary path is set directly in the wrapper scripts (`run-kopia-ssd.sh`, `run-kopia-b2.sh`), not in the plists. Update those scripts if the binary location changes.
+- Auto-detect the `kopia` binary
+- Discover all repository configs in `~/Library/Application Support/kopia/`
+- Read the `description` field from each config to use as a friendly agent name
+- Generate a wrapper script and launchd plist for each repo
+- Install and load all agents
+- Optionally run a test snapshot immediately
+
+Re-running the script is safe — it unloads and reloads agents before regenerating.
+
+Wrapper scripts are installed to `~/.local/bin`. Ensure this is in your `PATH` — add to `~/.zshrc` if needed:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
 
 ## Log Output
 
 Each backup run is wrapped with timestamps:
 
-```
-=== 2026-03-30 09:00:02 Starting kopia SSD snapshot ===
+```text
+=== 2026-03-30 09:00:02 Starting kopia snapshot (Kopia SSD) ===
 Snapshotting dang@daniel-mbp:/Users/dang ...
  * 0 hashing, 80 hashed (2.2 MB), 93479 cached (26.9 GB), uploaded 2.6 MB ...
 Created snapshot with root k... in 1m7s
@@ -71,15 +73,16 @@ Created snapshot with root k... in 1m7s
 
 Kopia requires **Full Disk Access** to snapshot protected locations like the Photos Library. Without it, you'll see:
 
-```
+```text
 ! Error when processing "Pictures/Photos Library.photoslibrary": cannot create iterator:
   unable to read directory: open /Users/dang/Pictures/Photos Library.photoslibrary: operation not permitted
 ```
 
 **To grant access:**
-1. System Settings → Privacy & Security → Full Disk Access
-2. Click `+` and add `/opt/homebrew/bin/kopia` (use Cmd+Shift+G in the file picker to navigate to the path)
-3. Also add your terminal app (e.g. iTerm2) if you want to run snapshots manually from the terminal
+
+- System Settings → Privacy & Security → Full Disk Access
+- Click `+` and add `/opt/homebrew/bin/kopia` (use Cmd+Shift+G in the file picker to navigate to the path)
+- Also add your terminal app (e.g. iTerm2) if you want to run snapshots manually from the terminal
 
 > **Note:** Each terminal app has its own FDA grant. If you see the Photos Library error when running kopia manually, check which terminal you're using — it may not have FDA even if the kopia binary does. The launchd agents are unaffected by this since they run independently of any terminal.
 
@@ -90,34 +93,28 @@ Kopia requires **Full Disk Access** to snapshot protected locations like the Pho
 launchctl list | grep com.kopia
 
 # Trigger a backup manually (without waiting for schedule)
-launchctl start com.kopia.backup.ssd
-launchctl start com.kopia.backup.b2
+launchctl start com.kopia.backup.<name>
 
 # View logs
-tail -f ~/Library/Logs/kopia-ssd.log
-tail -f ~/Library/Logs/kopia-b2.log
+tail -f ~/Library/Logs/kopia-<name>.log
 
-# Reload after editing a plist or wrapper script
-launchctl unload ~/Library/LaunchAgents/com.kopia.backup.ssd.plist
-launchctl load   ~/Library/LaunchAgents/com.kopia.backup.ssd.plist
+# Reload after editing a wrapper script
+launchctl unload ~/Library/LaunchAgents/com.kopia.backup.<name>.plist
+launchctl load   ~/Library/LaunchAgents/com.kopia.backup.<name>.plist
 ```
 
 ## File Locations
 
-```
-~/Library/Application Support/kopia/repository.config               # SSD repo config
-~/Library/Application Support/kopia/repository-1680706950621.config # B2 repo config
-~/Library/LaunchAgents/com.kopia.backup.ssd.plist
-~/Library/LaunchAgents/com.kopia.backup.b2.plist
-~/Library/Logs/kopia-ssd.log
-~/Library/Logs/kopia-b2.log
+```text
+~/Library/Application Support/kopia/*.config    # repo configs (one per connected repo)
+~/.local/bin/run-kopia-*.sh                     # generated wrapper scripts
+~/Library/LaunchAgents/com.kopia.backup.*.plist # generated agents
+~/Library/Logs/kopia-*.log                      # log files
 ```
 
 ## Adapting for Another Mac
 
-Same setup — change the username in the wrapper scripts and plist paths:
-- `/Users/dang/` → `/Users/username/`
-- Config filenames stay the same if connecting to the same repos
+Run `kopia-launchd-setup.sh` on the new Mac after connecting repositories in KopiaUI. The script discovers configs automatically — no manual path editing required.
 
 ## Notes
 
