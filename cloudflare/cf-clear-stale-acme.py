@@ -1,3 +1,4 @@
+import argparse
 import requests
 import logging
 import json
@@ -9,11 +10,14 @@ logging.basicConfig(
 )
 
 
-def check_and_delete_stale_acme_challenges():
+def check_and_delete_stale_acme_challenges(dry_run=False):
     url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records"
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
     }
+
+    if dry_run:
+        logging.info("DRY RUN mode — no records will be deleted. Use --delete to remove records.")
 
     try:
         response = requests.get(url, headers=headers)
@@ -39,12 +43,17 @@ def check_and_delete_stale_acme_challenges():
                     logging.info(
                         f"Found stale _acme-challenge record for {record['name']}"
                     )
-                    url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records/{record['id']}"
-                    response = requests.delete(url, headers=headers)
-                    response.raise_for_status()
-                    logging.info(
-                        f"Deleted stale _acme-challenge record for {record['name']}"
-                    )
+                    if dry_run:
+                        logging.info(
+                            f"[DRY RUN] Would delete record id={record['id']} for {record['name']}"
+                        )
+                    else:
+                        delete_url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/dns_records/{record['id']}"
+                        delete_response = requests.delete(delete_url, headers=headers)
+                        delete_response.raise_for_status()
+                        logging.info(
+                            f"Deleted stale _acme-challenge record for {record['name']}"
+                        )
                 else:
                     logging.debug(
                         f"TXT record for {record['name']} has no content (not a challenge)."
@@ -59,4 +68,8 @@ def check_and_delete_stale_acme_challenges():
 
 
 if __name__ == "__main__":
-    check_and_delete_stale_acme_challenges()
+    parser = argparse.ArgumentParser(description="Clear stale ACME challenge DNS records from Cloudflare.")
+    parser.add_argument("--delete", action="store_true", help="Actually delete stale records (default is dry-run).")
+    args = parser.parse_args()
+
+    check_and_delete_stale_acme_challenges(dry_run=not args.delete)
