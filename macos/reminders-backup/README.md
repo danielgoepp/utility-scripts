@@ -45,11 +45,9 @@ launchctl start com.dang.export-reminders
 cat /tmp/export-reminders.log
 ```
 
-# plist example
+### plist example
 
-```
-╭─dang at Daniel-MacBook-Pro in ~/Library/LaunchAgents 26-04-06 - 4:12:17
-╰─○ cat com.dang.export-reminders.plist
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
