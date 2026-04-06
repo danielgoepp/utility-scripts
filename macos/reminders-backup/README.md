@@ -44,3 +44,35 @@ launchctl start com.dang.export-reminders
 # Check logs
 cat /tmp/export-reminders.log
 ```
+
+# plist example
+
+```
+╭─dang at Daniel-MacBook-Pro in ~/Library/LaunchAgents 26-04-06 - 4:12:17
+╰─○ cat com.dang.export-reminders.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.dang.export-reminders</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>OUTDIR=/Users/dang/Documents/Household/General/Reminders; PYTHON=/Users/dang/Documents/Development/utility-scripts/.venv/bin/python3; SCRIPT=/Users/dang/Documents/Development/utility-scripts/macos/export-reminders.py; $PYTHON $SCRIPT -f json -o $OUTDIR/reminders-$(date +%Y-%m-%d).json &amp;&amp; $PYTHON $SCRIPT -f csv -o $OUTDIR/reminders-$(date +%Y-%m-%d).csv &amp;&amp; find $OUTDIR -name 'reminders-*' -mtime +3 -delete</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>5</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>StandardOutPath</key>
+    <string>/tmp/export-reminders.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/export-reminders.log</string>
+</dict>
+</plist>
+```
