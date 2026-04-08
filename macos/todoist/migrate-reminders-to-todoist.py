@@ -10,7 +10,7 @@ Setup:
     # Fill in TODOIST_API_TOKEN
     source .venv/bin/activate
     pip install requests pyobjc-framework-EventKit python-dotenv
-    python3 macos/migrate-reminders-to-todoist.py --incomplete-only
+    python3 macos/todoist/migrate-reminders-to-todoist.py --incomplete-only
 """
 
 import argparse
@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 
 import EventKit
 
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env"))
 
 TODOIST_API_TOKEN = os.getenv("TODOIST_API_TOKEN")
 TODOIST_BASE_URL = "https://api.todoist.com/api/v1"
