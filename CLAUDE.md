@@ -11,7 +11,6 @@ This repository contains a collection of Python utility scripts for managing and
 - **graylog/**: Scripts for Graylog log management system maintenance
 - **grafana/**: Utilities for Grafana datasource management
 - **homeassistant/**: Utilities for Home Assistant smart home platform integration
-- **jira/**: JIRA project management and issue tracking utilities
 - **kopia/**: Backup health monitoring for Kopia backup instances
 - **macos/**: macOS utilities including SMB mount automation and Reminders export
 - **mqtt/**: MQTT client utilities for messaging and testing
