@@ -10,9 +10,9 @@ Setup:
     # Fill in JIRA_* and TODOIST_API_TOKEN
     source .venv/bin/activate
     pip install requests python-dotenv
-    python3 macos/todoist/migrate-jira-sprint-to-todoist.py --list-epics --project PROJ
-    python3 macos/todoist/migrate-jira-sprint-to-todoist.py --epic PROJ-123 --dry-run
-    python3 macos/todoist/migrate-jira-sprint-to-todoist.py --epic PROJ-123
+    python3 macos/todoist/migrate-jira-to-todoist.py --list-epics --project PROJ
+    python3 macos/todoist/migrate-jira-to-todoist.py --epic PROJ-123 --dry-run
+    python3 macos/todoist/migrate-jira-to-todoist.py --epic PROJ-123
 """
 
 import argparse
