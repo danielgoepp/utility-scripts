@@ -104,7 +104,7 @@ def get_epic_issues(epic_key):
     next_page_token = None
     while True:
         body = {
-            "jql": f'parent = "{epic_key}" OR "Epic Link" = "{epic_key}"',
+            "jql": f'(parent = "{epic_key}" OR "Epic Link" = "{epic_key}") AND status != Done',
             "maxResults": 50,
             "fields": ["summary", "description"],
         }
@@ -171,6 +171,11 @@ def _adf_to_text(node, depth=0):
     if depth > 20:
         return ""
     node_type = node.get("type", "")
+
+    # Smart link cards store the URL in attrs.url, not in text
+    if node_type in ("inlineCard", "blockCard", "embedCard"):
+        return node.get("attrs", {}).get("url", "")
+
     text = node.get("text", "")
     children = node.get("content", [])
     parts = [text] if text else []
@@ -213,6 +218,22 @@ def migrate(issues, dry_run=False, rate_limit_delay=0.25):
     return created, skipped
 
 
+def write_markdown(issues, epic_key, output_path):
+    """Write Jira issues to a Markdown file as a task checklist."""
+    lines = [f"# {epic_key}\n"]
+    for issue in issues:
+        fields = issue_to_task_fields(issue)
+        lines.append(f"- [ ] {fields['content']}")
+        if fields["description"]:
+            for desc_line in fields["description"].splitlines():
+                lines.append(f"  {desc_line}" if desc_line.strip() else "")
+            lines.append("")
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"Wrote {len(issues)} issue(s) to {output_path}")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -236,6 +257,11 @@ def main():
         "--dry-run",
         action="store_true",
         help="Print what would be created without making any Todoist API calls",
+    )
+    parser.add_argument(
+        "--output-md",
+        metavar="FILE",
+        help="Write issues to a Markdown file instead of creating Todoist tasks",
     )
     args = parser.parse_args()
 
@@ -270,6 +296,10 @@ def main():
     print(f"Found {len(issues)} issue(s).")
 
     if not issues:
+        return
+
+    if args.output_md:
+        write_markdown(issues, args.epic, args.output_md)
         return
 
     print(f"\nMigrating to Todoist inbox{' [DRY RUN]' if args.dry_run else ''}...")
