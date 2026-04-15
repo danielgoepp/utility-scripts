@@ -5,3 +5,6 @@ paho-mqtt
 scapy
 uptime-kuma-api
 pyobjc-framework-EventKit
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
