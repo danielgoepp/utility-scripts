@@ -89,12 +89,16 @@ Found 3 calendar(s):
 
 ### `delete-calendar.py`
 
-Deletes or unsubscribes from a calendar. The behaviour depends on your access role:
+Deletes or unsubscribes from a calendar. A confirmation prompt is always shown before any action is taken.
 
-- **Owner** — permanently deletes the calendar and all its events
-- **Reader / Writer** — removes it from your calendar list (unsubscribes you; the calendar itself is unaffected)
+For **owned** calendars you are prompted to choose between:
 
-The primary calendar cannot be deleted. A confirmation prompt is always shown before any action is taken.
+- **Permanently delete** — removes the calendar and all its events forever
+- **Remove from list** — hides it from your account without deleting the underlying calendar
+
+For **non-owned** calendars (reader, writer) the only option is to remove it from your list (unsubscribe).
+
+The primary calendar cannot be deleted or removed.
 
 ```bash
 # Interactive: lists calendars and prompts you to pick one
@@ -102,7 +106,12 @@ python3 google/delete-calendar.py
 
 # Direct: specify a calendar ID to skip selection
 python3 google/delete-calendar.py --id <calendarId>
+
+# Skip the delete/remove prompt and force remove-from-list only
+python3 google/delete-calendar.py --id <calendarId> --remove-from-list
 ```
+
+> **Note:** Google system-managed calendars (e.g. Birthdays) cannot be deleted or removed via the API regardless of ownership. This is a Google platform restriction with no workaround.
 
 ---
 

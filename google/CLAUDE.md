@@ -61,6 +61,7 @@ python3 google/list-calendars.py
 python3 google/list-calendars.py --show-hidden
 python3 google/delete-calendar.py
 python3 google/delete-calendar.py --id <calendarId>
+python3 google/delete-calendar.py --id <calendarId> --remove-from-list
 ```
 
 ## Script Reference
@@ -69,4 +70,10 @@ python3 google/delete-calendar.py --id <calendarId>
 | --- | --- |
 | `auth.py` | OAuth login — run once to generate `token.json` |
 | `list-calendars.py` | List all calendars (ID, access role, time zone) |
-| `delete-calendar.py` | Delete an owned calendar or unsubscribe from a non-owned one |
+| `delete-calendar.py` | Permanently delete an owned calendar, or remove/unsubscribe from any calendar |
+
+## Google API Limitations
+
+- **System-managed calendars** (e.g. Birthdays) cannot be deleted or removed from the calendar list via the API, even if you are the owner. This is a Google platform restriction with no known workaround.
+- The **primary calendar** cannot be deleted or removed.
+- `deleted` is a read-only field on calendarList resources — it cannot be set via the API.
