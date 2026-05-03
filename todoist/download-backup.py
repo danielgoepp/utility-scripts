@@ -24,7 +24,7 @@ load_dotenv(ENV_FILE)
 TODOIST_OAUTH_TOKEN = os.getenv("TODOIST_OAUTH_TOKEN")
 TODOIST_API_TOKEN = os.getenv("TODOIST_API_TOKEN")
 TODOIST_BASE_URL = "https://api.todoist.com/api/v1"
-DEFAULT_OUTPUT_DIR = os.path.expanduser("~/Downloads")
+DEFAULT_OUTPUT_DIR = os.path.expanduser("/Volumes/Backups/todoist")
 
 
 def get_latest_backup():
@@ -67,7 +67,9 @@ def download_backup(backup, output_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Download the most recent Todoist backup")
+    parser = argparse.ArgumentParser(
+        description="Download the most recent Todoist backup"
+    )
     parser.add_argument(
         "--output-dir",
         default=DEFAULT_OUTPUT_DIR,
