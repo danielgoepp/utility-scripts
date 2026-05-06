@@ -17,23 +17,18 @@ def last_seen_days_ago(last_seen):
 
 
 def create_session():
-    """Create and authenticate a UniFi session."""
+    """Create a UniFi session authenticated via API key."""
+    if not config.UNIFI_API_KEY:
+        raise ValueError("UNIFI_API_KEY environment variable is required")
+
     session = requests.Session()
-
-    if not config.PASSWORD:
-        raise ValueError("UNIFI_PASSWORD environment variable is required")
-
-    login_url = f"{config.UNIFI_CONTROLLER}/api/login"
-    login_data = {"username": config.USERNAME, "password": config.PASSWORD}
-    response = session.post(login_url, json=login_data)
-    response.raise_for_status()
-
+    session.headers.update({"X-API-Key": config.UNIFI_API_KEY})
     return session
 
 
 def get_historical_clients(session):
     """Get all historical/configured clients."""
-    url = f"{config.UNIFI_CONTROLLER}/api/s/{config.SITE}/rest/user"
+    url = f"{config.UNIFI_CONTROLLER}/proxy/network/api/s/{config.SITE}/rest/user"
     response = session.get(url)
     response.raise_for_status()
     return response.json()["data"]
@@ -41,7 +36,7 @@ def get_historical_clients(session):
 
 def get_active_clients(session):
     """Get currently active clients."""
-    url = f"{config.UNIFI_CONTROLLER}/api/s/{config.SITE}/stat/sta"
+    url = f"{config.UNIFI_CONTROLLER}/proxy/network/api/s/{config.SITE}/stat/sta"
     response = session.get(url)
     response.raise_for_status()
     return response.json()["data"]
@@ -162,7 +157,7 @@ def confirm_deletion(devices_to_delete, days_threshold):
 
 def delete_device(session, mac):
     """Delete a device from UniFi controller."""
-    delete_url = f"{config.UNIFI_CONTROLLER}/api/s/{config.SITE}/cmd/stamgr"
+    delete_url = f"{config.UNIFI_CONTROLLER}/proxy/network/api/s/{config.SITE}/cmd/stamgr"
     mac_formatted = mac.lower().replace("-", ":") if mac else None
 
     if not mac_formatted:
@@ -255,12 +250,6 @@ def main():
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
         sys.exit(1)
-    finally:
-        try:
-            logout_url = f"{config.UNIFI_CONTROLLER}/logout"
-            session.post(logout_url)
-        except:
-            pass  # Ignore logout errors
 
 
 if __name__ == "__main__":
