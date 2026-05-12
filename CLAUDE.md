@@ -4,26 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture Overview
 
-This repository contains a collection of Python utility scripts for managing and maintaining various monitoring and infrastructure services. The codebase is organized into service-specific directories:
+This repository contains a collection of Python utility scripts for managing and maintaining various infrastructure and home automation services. The codebase is organized into service-specific directories:
 
-- **alertmanager/**: Scripts for managing Prometheus AlertManager silences and maintenance windows
-- **cloudflare/**: Utilities for Cloudflare DNS and certificate management
-- **graylog/**: Scripts for Graylog log management system maintenance
-- **grafana/**: Utilities for Grafana datasource management
-- **homeassistant/**: Utilities for Home Assistant smart home platform integration
-- **kopia/**: Backup health monitoring for Kopia backup instances
-- **macos/**: macOS utilities including SMB mount automation and Reminders export
-- **mqtt/**: MQTT client utilities for messaging and testing
-- **network/**: Network scanning and analysis tools
-- **opensearch/**: OpenSearch index management (field counts, top queries purge)
-- **unifi/**: UniFi network controller management utilities
-- **uptime-kuma/**: Utilities for Uptime Kuma monitoring service (maintenance mode, monitor import from Excel)
+- **alertmanager/**: Prometheus AlertManager silence and maintenance window management
+- **cloudflare/**: Cloudflare DNS and certificate management
+- **google/**: Google Calendar management (OAuth-based)
+- **grafana/**: Grafana datasource management
+- **graylog/**: Graylog maintenance mode management
+- **homeassistant/**: Home Assistant entity, device, and automation management
+- **kopia/**: Backup health monitoring for Kopia instances
+- **macos/**: macOS utilities — Contacts CSV export and SMB mount AppleScript
+- **mqtt/**: MQTT client utilities for device listing and testing
+- **network/**: Network scanning and host analysis tools
+- **opensearch/**: OpenSearch index management
+- **todoist/**: Todoist backup download with OAuth setup
+- **unifi/**: UniFi network controller device management
+- **uptime-kuma/**: Uptime Kuma monitor import/export, maintenance, and notifications
 - **zigbee2mqtt/**: Zigbee device monitoring and management via MQTT
 
 Each service directory follows a consistent pattern:
 
 - `config.py`: Centralized configuration management using environment variables loaded via `python-dotenv`
-- `*-maintenance.py`: Main script for service maintenance operations
 - `.env`: Environment variables file (gitignored)
 - `.env.example`: Template showing required environment variables
 
@@ -77,7 +78,9 @@ Scripts use external Python libraries:
 - `python-dotenv` for environment variable loading
 - `paho-mqtt` for MQTT client operations
 - `scapy` for network packet manipulation and analysis
-- Standard library modules: `os`, `json`, `argparse`, `datetime`, `smtplib`
+- `pyobjc-framework-Contacts` for macOS Contacts access
+- `google-api-python-client`, `google-auth-httplib2`, `google-auth-oauthlib` for Google API access
+- Standard library modules: `os`, `json`, `argparse`, `datetime`
 
 ## File Naming Convention
 
@@ -89,10 +92,7 @@ All Python scripts follow dash-separated naming for consistency:
 
 ## Common Operations
 
-- **Maintenance Mode**: Scripts typically provide functionality to enable/disable maintenance windows
 - **API Integration**: All scripts interact with their respective service APIs
-- **Network Operations**: Network scanning, device discovery, and packet analysis
 - **Device Management**: Monitor and manage IoT devices, network equipment, and smart home systems
-- **Monitoring & Alerting**: Real-time monitoring with email notifications and status reporting
-- **Logging**: Scripts output operational information and status updates
-- **Error Handling**: Scripts include comprehensive error handling for all operations
+- **Data Export**: Export configuration and entity data for backup or analysis
+- **Network Operations**: Network scanning, device discovery, and packet analysis
