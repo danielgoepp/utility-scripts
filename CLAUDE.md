@@ -88,7 +88,7 @@ All Python scripts follow dash-separated naming for consistency:
 
 - `device-management.py` (not `device_management.py`)
 - `get-entities.py` (not `get_entities.py`)
-- `unifi-delete-offline-devices.py` (not `unifi_delete_offline_devices.py`)
+- `unifi-delete-offline-clients.py` (not `unifi_delete_offline_clients.py`)
 
 ## Common Operations
 

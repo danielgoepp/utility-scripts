@@ -84,8 +84,9 @@ python3 <service>/<script>.py -h
 
 ### UniFi
 
-- `unifi-api-device-list.py` - List devices from UniFi controller
-- `unifi-delete-offline-devices.py` - Remove offline devices from UniFi
+- `unifi-device-list.py` - List UniFi hardware devices (cloud API)
+- `unifi-list-online-clients.py` - List currently online client devices (local API)
+- `unifi-delete-offline-clients.py` - Remove offline client devices from UniFi
 
 ### Uptime Kuma
 
