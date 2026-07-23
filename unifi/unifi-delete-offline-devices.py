@@ -18,11 +18,11 @@ def last_seen_days_ago(last_seen):
 
 def create_session():
     """Create a UniFi session authenticated via API key."""
-    if not config.UNIFI_API_KEY:
-        raise ValueError("UNIFI_API_KEY environment variable is required")
+    if not config.UNIFI_LOCAL_API_KEY:
+        raise ValueError("UNIFI_LOCAL_API_KEY environment variable is required")
 
     session = requests.Session()
-    session.headers.update({"X-API-Key": config.UNIFI_API_KEY})
+    session.headers.update({"X-API-Key": config.UNIFI_LOCAL_API_KEY})
     return session
 
 
@@ -244,6 +244,16 @@ def main():
 
             perform_deletions(session, devices_to_delete)
 
+    except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code in (401, 403):
+            print(
+                f"Error connecting to UniFi controller: {e} — the local API key "
+                "(UNIFI_LOCAL_API_KEY) is missing, invalid, or unauthorized",
+                file=sys.stderr,
+            )
+        else:
+            print(f"Error connecting to UniFi controller: {e}", file=sys.stderr)
+        sys.exit(1)
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to UniFi controller: {e}", file=sys.stderr)
         sys.exit(1)
