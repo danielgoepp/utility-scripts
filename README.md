@@ -77,6 +77,10 @@ python3 <service>/<script>.py -h
 - `opensearch-field-count.py` - Report field counts across indices
 - `opensearch-purge-top-queries.py` - Purge top queries data
 
+### OPNsense
+
+- `opnsense-dhcp-leases.py` - List DHCPv4 leases (legacy ISC DHCP)
+
 ### Todoist
 
 - `download-backup.py` - Download Todoist backups
