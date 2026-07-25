@@ -10,26 +10,23 @@ import config
 LEASE_CSV_FIELDS = [
     "address",
     "hostname",
-    "mac",
-    "if",
+    "hwaddr",
+    "if_name",
     "if_descr",
-    "type",
-    "state",
-    "starts",
-    "ends",
-    "man",
-    "descr",
+    "expires",
+    "is_reserved",
+    "client_id",
 ]
 
 
 def get_leases():
-    """Fetch DHCPv4 leases from the OPNsense legacy ISC DHCP API."""
+    """Fetch active leases from the OPNsense dnsmasq API."""
     if not config.OPNSENSE_URL or not config.OPNSENSE_API_KEY or not config.OPNSENSE_API_SECRET:
         raise ValueError(
             "OPNSENSE_URL, OPNSENSE_API_KEY, and OPNSENSE_API_SECRET environment variables are required"
         )
 
-    url = f"{config.OPNSENSE_URL.rstrip('/')}/api/dhcpv4/leases/search_lease"
+    url = f"{config.OPNSENSE_URL.rstrip('/')}/api/dnsmasq/leases/search"
 
     try:
         response = requests.get(
@@ -42,15 +39,15 @@ def get_leases():
     except requests.exceptions.HTTPError as e:
         if e.response is not None and e.response.status_code in (401, 403):
             print(
-                f"Error fetching DHCP leases: {e} — the API key/secret is missing, "
+                f"Error fetching dnsmasq leases: {e} — the API key/secret is missing, "
                 "invalid, or unauthorized",
                 file=sys.stderr,
             )
         else:
-            print(f"Error fetching DHCP leases: {e}", file=sys.stderr)
+            print(f"Error fetching dnsmasq leases: {e}", file=sys.stderr)
         return None
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching DHCP leases: {e}", file=sys.stderr)
+        print(f"Error fetching dnsmasq leases: {e}", file=sys.stderr)
         return None
 
 
@@ -59,18 +56,16 @@ def print_leases_csv(rows):
     writer = csv.DictWriter(sys.stdout, fieldnames=LEASE_CSV_FIELDS, extrasaction="ignore")
     writer.writeheader()
     for lease in rows:
-        writer.writerow(lease)
+        row = dict(lease)
+        row["is_reserved"] = ",".join(lease.get("is_reserved") or [])
+        writer.writerow(row)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch DHCPv4 leases from OPNsense (legacy ISC DHCP)")
+    parser = argparse.ArgumentParser(description="Fetch active DHCP leases from OPNsense dnsmasq")
     parser.add_argument(
         "--format", choices=["json", "csv"], default="csv",
         help="Output format (default: csv). json outputs the full raw API response.",
-    )
-    parser.add_argument(
-        "--type", choices=["all", "static", "dynamic"], default="all",
-        help="Filter by lease type (default: all). 'static' returns only DHCP reservations.",
     )
     args = parser.parse_args()
 
@@ -80,8 +75,6 @@ def main():
             sys.exit(1)
 
         rows = data.get("rows", [])
-        if args.type != "all":
-            rows = [r for r in rows if r.get("type") == args.type]
 
         if args.format == "csv":
             print_leases_csv(rows)

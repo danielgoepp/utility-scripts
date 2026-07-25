@@ -80,6 +80,8 @@ python3 <service>/<script>.py -h
 ### OPNsense
 
 - `opnsense-dhcp-leases.py` - List DHCPv4 leases (legacy ISC DHCP)
+- `opnsense-dnsmasq-leases.py` - List active DHCP leases served by dnsmasq
+- `opnsense-dnsmasq-import-hosts.py` - Import ISC DHCP static reservations into dnsmasq host reservations (ISC → dnsmasq migration helper)
 
 ### Todoist
 
