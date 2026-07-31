@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import ipaddress
 import json
 import sys
 from datetime import datetime, timezone
@@ -113,6 +114,18 @@ def add_inactive_reservations(rows):
     return rows
 
 
+def sort_by_address(rows):
+    """Sort leases by IP address, numerically. Rows with missing/invalid addresses sort last."""
+
+    def key(row):
+        try:
+            return (0, ipaddress.ip_address(row.get("address")))
+        except (ValueError, TypeError):
+            return (1, row.get("address") or "")
+
+    return sorted(rows, key=key)
+
+
 def print_leases_csv(rows):
     """Print leases as CSV."""
     writer = csv.DictWriter(sys.stdout, fieldnames=LEASE_CSV_FIELDS, extrasaction="ignore")
@@ -152,6 +165,8 @@ def main():
             rows = add_inactive_reservations(rows)
             if rows is None:
                 sys.exit(1)
+
+        rows = sort_by_address(rows)
 
         if args.format == "csv":
             print_leases_csv(rows)
