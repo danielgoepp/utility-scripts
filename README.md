@@ -79,7 +79,8 @@ python3 <service>/<script>.py -h
 
 ### OPNsense
 
-- `opnsense-dnsmasq-leases.py` - List active DHCP leases served by dnsmasq
+- `opnsense-dnsmasq-leases.py` - List DHCP leases served by dnsmasq, including configured host reservations with no active lease (use `--no-reservations` to show active leases only)
+- `opnsense-dnsmasq-reserve-by-hostname.py` - Interactively create dnsmasq host reservations for leases matching a hostname substring, assigned sequentially from a chosen starting IP (no arguments; prompts for input and reloads dnsmasq automatically)
 
 ### Todoist
 
