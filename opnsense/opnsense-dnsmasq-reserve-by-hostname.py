@@ -12,14 +12,18 @@ SESSION = None
 
 def api_get(path, params=None):
     url = f"{config.OPNSENSE_URL.rstrip('/')}{path}"
-    response = SESSION.get(url, params=params, auth=AUTH, verify=config.OPNSENSE_VERIFY_SSL)
+    response = SESSION.get(
+        url, params=params, auth=AUTH, verify=config.OPNSENSE_VERIFY_SSL
+    )
     response.raise_for_status()
     return response.json()
 
 
 def api_post(path, payload=None):
     url = f"{config.OPNSENSE_URL.rstrip('/')}{path}"
-    response = SESSION.post(url, json=payload or {}, auth=AUTH, verify=config.OPNSENSE_VERIFY_SSL)
+    response = SESSION.post(
+        url, json=payload or {}, auth=AUTH, verify=config.OPNSENSE_VERIFY_SSL
+    )
     response.raise_for_status()
     return response.json()
 
@@ -58,7 +62,9 @@ def prompt_start_ip():
         try:
             return ipaddress.IPv4Address(answer)
         except ipaddress.AddressValueError:
-            print(f"'{answer}' is not a valid IPv4 address, try again.", file=sys.stderr)
+            print(
+                f"'{answer}' is not a valid IPv4 address, try again.", file=sys.stderr
+            )
 
 
 def build_host_payload(lease, ip, domain):
@@ -73,7 +79,11 @@ def build_host_payload(lease, ip, domain):
 
 
 def main():
-    if not config.OPNSENSE_URL or not config.OPNSENSE_API_KEY or not config.OPNSENSE_API_SECRET:
+    if (
+        not config.OPNSENSE_URL
+        or not config.OPNSENSE_API_KEY
+        or not config.OPNSENSE_API_SECRET
+    ):
         print(
             "OPNSENSE_URL, OPNSENSE_API_KEY, and OPNSENSE_API_SECRET environment variables are required",
             file=sys.stderr,
@@ -127,7 +137,10 @@ def main():
         matches = [lease for lease in matches if lease.get("hwaddr")]
 
     if not matches:
-        print("\nNo eligible leases remain after filtering out missing MAC addresses.", file=sys.stderr)
+        print(
+            "\nNo eligible leases remain after filtering out missing MAC addresses.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     start_ip = prompt_start_ip()
@@ -144,7 +157,9 @@ def main():
         sys.exit(1)
 
     existing_ips = {h.get("ip", "").lower() for h in existing_hosts if h.get("ip")}
-    existing_macs = {h.get("hwaddr", "").lower() for h in existing_hosts if h.get("hwaddr")}
+    existing_macs = {
+        h.get("hwaddr", "").lower() for h in existing_hosts if h.get("hwaddr")
+    }
 
     lease_ips_in_use = {
         lease.get("address", "").lower()
@@ -174,7 +189,9 @@ def main():
         mac = lease.get("hwaddr", "")
 
         if mac.lower() in existing_macs:
-            print(f"SKIP  {hostname:30} {str(ip):16} {mac}  (MAC already reserved elsewhere)")
+            print(
+                f"SKIP  {hostname:30} {str(ip):16} {mac}  (MAC already reserved elsewhere)"
+            )
             continue
 
         payload = build_host_payload(lease, ip, domain)
@@ -184,7 +201,10 @@ def main():
                 print(f"ADDED  {hostname:30} {str(ip):16} {mac}")
                 created += 1
             else:
-                print(f"FAILED {hostname:30} {str(ip):16} {mac}  {result}", file=sys.stderr)
+                print(
+                    f"FAILED {hostname:30} {str(ip):16} {mac}  {result}",
+                    file=sys.stderr,
+                )
                 failed += 1
         except requests.exceptions.RequestException as e:
             print(f"FAILED {hostname:30} {str(ip):16} {mac}  {e}", file=sys.stderr)
@@ -193,7 +213,10 @@ def main():
     print(f"\nCreated: {created}, failed: {failed}", file=sys.stderr)
 
     if failed:
-        print("Skipping reconfigure — one or more reservations failed to create.", file=sys.stderr)
+        print(
+            "Skipping reconfigure — one or more reservations failed to create.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     if created:
