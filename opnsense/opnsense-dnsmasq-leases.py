@@ -4,6 +4,8 @@ import argparse
 import csv
 import json
 import sys
+from datetime import datetime, timezone
+
 import requests
 import config
 
@@ -11,7 +13,7 @@ LEASE_CSV_FIELDS = [
     "address",
     "hostname",
     "hwaddr",
-    "if_name",
+    "mac_info",
     "if_descr",
     "expires",
     "is_reserved",
@@ -58,6 +60,10 @@ def print_leases_csv(rows):
     for lease in rows:
         row = dict(lease)
         row["is_reserved"] = ",".join(lease.get("is_reserved") or [])
+        expire = lease.get("expire")
+        row["expires"] = (
+            datetime.fromtimestamp(int(expire), tz=timezone.utc).isoformat() if expire else ""
+        )
         writer.writerow(row)
 
 
