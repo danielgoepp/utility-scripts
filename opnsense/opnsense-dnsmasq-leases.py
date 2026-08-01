@@ -114,6 +114,12 @@ def add_inactive_reservations(rows):
     return rows
 
 
+def filter_by_if_descr(rows, if_descr):
+    """Keep only rows on the given interface, matched case-insensitively."""
+    wanted = if_descr.casefold()
+    return [row for row in rows if (row.get("if_descr") or "").casefold() == wanted]
+
+
 def sort_by_address(rows):
     """Sort leases by IP address, numerically. Rows with missing/invalid addresses sort last."""
 
@@ -152,6 +158,11 @@ def main():
         help="Omit configured host reservations that have no active lease (by default, "
         "they're included with status 'reserved (no active lease)').",
     )
+    parser.add_argument(
+        "--if-descr", metavar="INTERFACE",
+        help="Only show leases on this interface, e.g. LAN (case-insensitive). Host "
+        "reservations without an active lease have no interface and are excluded.",
+    )
     args = parser.parse_args()
 
     try:
@@ -165,6 +176,9 @@ def main():
             rows = add_inactive_reservations(rows)
             if rows is None:
                 sys.exit(1)
+
+        if args.if_descr:
+            rows = filter_by_if_descr(rows, args.if_descr)
 
         rows = sort_by_address(rows)
 
