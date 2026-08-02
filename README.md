@@ -46,9 +46,9 @@ python3 <service>/<script>.py -h
 
 ### Home Assistant
 
-- `devices-list.py` - List all devices
 - `get-automations.py` - Export automations
 - `get-config.py` - Retrieve HA configuration
+- `get-devices.py` - List entity states, with filters for unavailable/unknown entities
 - `get-entities.py` - List entities
 - `get-light-settings.py` - Export light entity settings
 - `ha-automation-filter.py` - Filter automations by criteria
