@@ -99,6 +99,7 @@ python3 <service>/<script>.py -h
 - `uptime-kuma-import.py` - Import monitor configuration
 - `uptime-kuma-maintenance.py` - Manage maintenance windows
 - `uptime-kuma-enable-notifications.py` - Bulk enable notifications
+- `uptime-kuma-set-group-retries.py` - Set retry count for all monitors in a parent group
 
 ### Zigbee2MQTT
 
