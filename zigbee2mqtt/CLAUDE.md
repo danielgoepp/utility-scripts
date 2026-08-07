@@ -67,6 +67,18 @@ python3 z2m-request-attribute.py --log-line "... 'dict object' has no attribute 
 tail -n 200 home-assistant.log | python3 z2m-request-attribute.py --dry-run
 ```
 
+### mqtt-test.py
+
+Bare-bones MQTT connectivity test — connects to the broker, subscribes to
+`#` (every topic), and prints each message as it arrives. Useful for
+verifying broker credentials/connectivity or eyeballing raw traffic when
+debugging a specific script, independent of Zigbee2MQTT.
+
+**Usage:**
+```bash
+python3 mqtt-test.py
+```
+
 ### zigbee-state.py
 
 Processes Zigbee device state information from a JSON state file, focusing on color mode and color values.

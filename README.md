@@ -63,11 +63,6 @@ python3 <service>/<script>.py -h
 - `export-contacts.py` - Export macOS Contacts to CSV
 - `MacOS Mount SMB.scpt` - AppleScript for automating SMB share mounts
 
-### MQTT
-
-- `list-devices.py` - List devices seen on MQTT broker
-- `mqtt_test.py` - Basic MQTT publish/subscribe testing
-
 ### Network
 
 - `network-scan.py` - Scan network and analyze discovered hosts
@@ -106,6 +101,7 @@ python3 <service>/<script>.py -h
 - `z2m-get-devices.py` - List Zigbee devices
 - `z2m-get-color-mode.py` - Query color mode for light devices
 - `z2m-monitor-device.py` - Monitor a specific device's MQTT messages
+- `mqtt-test.py` - Basic MQTT publish/subscribe testing
 
 ## Architecture
 

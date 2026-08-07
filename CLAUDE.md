@@ -14,7 +14,6 @@ This repository contains a collection of Python utility scripts for managing and
 - **homeassistant/**: Home Assistant entity, device, and automation management
 - **kopia/**: Backup health monitoring for Kopia instances
 - **macos/**: macOS utilities — Contacts CSV export and SMB mount AppleScript
-- **mqtt/**: MQTT client utilities for device listing and testing
 - **network/**: Network scanning and host analysis tools
 - **opensearch/**: OpenSearch index management
 - **opnsense/**: OPNsense firewall/router API management (DHCP leases, etc.)
