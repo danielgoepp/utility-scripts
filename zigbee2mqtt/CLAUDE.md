@@ -37,6 +37,36 @@ Monitors Zigbee devices for offline status and optionally sends email notificati
 python3 z2m-get-offline.py [--email] [--format table|csv|json] [--timeout SECONDS] [--quiet]
 ```
 
+### z2m-request-attribute.py
+
+Finds MQTT-discovered entities (any domain — climate, sensor, etc.) whose HA
+discovery template references a given JSON key, then publishes a Zigbee2MQTT
+`get` request so the device reports it. Built to close out the recurring
+`'dict object' has no attribute 'X'` / `Template variable warning` log spam
+that shows up when a device stops including an attribute (e.g. `system_mode`)
+in its state payload — the log itself never names the device.
+
+**Features:**
+- Extracts the attribute key straight from a pasted log line/dump (`--log-line`
+  or stdin), or takes it directly via `--key`
+- Subscribes to all `homeassistant/.../config` discovery topics and matches
+  the key against every `*_template` field via `value_json["key"]` / `value_json.key`
+- Resolves the matching topic (e.g. `mode_state_template` → `mode_state_topic`)
+  and publishes `{"<key>": ""}` to `<topic>/get`, deduped per device
+- `--dry-run` to preview without publishing
+
+**Usage:**
+```bash
+# Direct
+python3 z2m-request-attribute.py --key system_mode
+
+# From a copied log line
+python3 z2m-request-attribute.py --log-line "... 'dict object' has no attribute 'system_mode' when rendering ..."
+
+# Piped from HA logs
+tail -n 200 home-assistant.log | python3 z2m-request-attribute.py --dry-run
+```
+
 ### zigbee-state.py
 
 Processes Zigbee device state information from a JSON state file, focusing on color mode and color values.
