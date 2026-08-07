@@ -9,6 +9,7 @@ This directory contains Python scripts for monitoring and managing Zigbee device
 Collects and displays Zigbee device information from the Zigbee2MQTT bridge via MQTT.
 
 **Features:**
+
 - Connects to MQTT broker and subscribes to the bridge info topic
 - Retrieves device configuration including device ID, friendly name, type, and model
 - Supports multiple output formats: table, CSV, JSON
@@ -16,6 +17,7 @@ Collects and displays Zigbee device information from the Zigbee2MQTT bridge via 
 - Device name filtering (case insensitive)
 
 **Usage:**
+
 ```bash
 python3 z2m-get-devices.py [--format table|csv|json] [--details] [--timeout SECONDS] [--filter NAME]
 ```
@@ -25,6 +27,7 @@ python3 z2m-get-devices.py [--format table|csv|json] [--details] [--timeout SECO
 Monitors Zigbee devices for offline status and optionally sends email notifications.
 
 **Features:**
+
 - Scans multiple Zigbee2MQTT bridges (zigbee11 and zigbee15) for offline devices
 - Subscribes to availability topics on both bridges to detect device status
 - Email notification support when offline devices are found
@@ -33,6 +36,7 @@ Monitors Zigbee devices for offline status and optionally sends email notificati
 - Returns exit code 1 if offline devices are found (useful for monitoring)
 
 **Usage:**
+
 ```bash
 python3 z2m-get-offline.py [--email] [--format table|csv|json] [--timeout SECONDS] [--quiet]
 ```
@@ -47,6 +51,7 @@ that shows up when a device stops including an attribute (e.g. `system_mode`)
 in its state payload — the log itself never names the device.
 
 **Features:**
+
 - Extracts the attribute key straight from a pasted log line/dump (`--log-line`
   or stdin), or takes it directly via `--key`
 - Subscribes to all `homeassistant/.../config` discovery topics and matches
@@ -56,6 +61,7 @@ in its state payload — the log itself never names the device.
 - `--dry-run` to preview without publishing
 
 **Usage:**
+
 ```bash
 # Direct
 python3 z2m-request-attribute.py --key system_mode
@@ -75,6 +81,7 @@ verifying broker credentials/connectivity or eyeballing raw traffic when
 debugging a specific script, independent of Zigbee2MQTT.
 
 **Usage:**
+
 ```bash
 python3 mqtt-test.py
 ```
@@ -84,12 +91,14 @@ python3 mqtt-test.py
 Processes Zigbee device state information from a JSON state file, focusing on color mode and color values.
 
 **Features:**
+
 - Reads device state from a JSON file (default: `/tmp/state.json`)
 - Extracts color mode information (xy coordinates or color temperature)
 - Supports multiple output formats: table, CSV, JSON
 - Device name filtering (case insensitive)
 
 **Usage:**
+
 ```bash
 python3 zigbee-state.py [--file PATH] [--format table|csv|json] [--filter NAME]
 ```
