@@ -58,7 +58,7 @@ cat /tmp/export-reminders.log
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>OUTDIR=/Users/dang/Documents/Household/General/Reminders; PYTHON=/Users/dang/Documents/Development/utility-scripts/.venv/bin/python3; SCRIPT=/Users/dang/Documents/Development/utility-scripts/macos/export-reminders.py; $PYTHON $SCRIPT -f json -o $OUTDIR/reminders-$(date +%Y-%m-%d).json &amp;&amp; $PYTHON $SCRIPT -f csv -o $OUTDIR/reminders-$(date +%Y-%m-%d).csv &amp;&amp; find $OUTDIR -name 'reminders-*' -mtime +3 -delete</string>
+        <string>OUTDIR=/Users/dang/Documents/Household/General/Reminders; PYTHON=/Users/dang/Development/utility-scripts/.venv/bin/python3; SCRIPT=/Users/dang/Development/utility-scripts/macos/export-reminders.py; $PYTHON $SCRIPT -f json -o $OUTDIR/reminders-$(date +%Y-%m-%d).json &amp;&amp; $PYTHON $SCRIPT -f csv -o $OUTDIR/reminders-$(date +%Y-%m-%d).csv &amp;&amp; find $OUTDIR -name 'reminders-*' -mtime +3 -delete</string>
     </array>
     <key>StartCalendarInterval</key>
     <dict>
