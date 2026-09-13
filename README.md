@@ -77,6 +77,10 @@ python3 <service>/<script>.py -h
 - `opnsense-dnsmasq-leases.py` - List DHCP leases served by dnsmasq, including configured host reservations with no active lease (use `--no-reservations` to show active leases only, or `--if-descr LAN` to limit output to a single interface)
 - `opnsense-dnsmasq-reserve-by-hostname.py` - Interactively create dnsmasq host reservations for leases matching a hostname substring, assigned sequentially from a chosen starting IP (no arguments; prompts for input and reloads dnsmasq automatically)
 
+### Python Maintenance
+
+- `update-python-libraries.py` - Upgrade outdated packages across the Homebrew system Python and all project venvs found under a scan root
+
 ### Todoist
 
 - `download-backup.py` - Download Todoist backups

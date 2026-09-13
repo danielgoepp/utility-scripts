@@ -17,6 +17,7 @@ This repository contains a collection of Python utility scripts for managing and
 - **network/**: Network scanning and host analysis tools
 - **opensearch/**: OpenSearch index management
 - **opnsense/**: OPNsense firewall/router API management (DHCP leases, etc.)
+- **python-maintenance/**: Upgrade outdated packages across the system Python and project venvs
 - **todoist/**: Todoist backup download with OAuth setup
 - **unifi/**: UniFi network controller device management
 - **uptime-kuma/**: Uptime Kuma monitor import/export, maintenance, and notifications
