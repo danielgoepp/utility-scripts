@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository contains a collection of Python utility scripts for managing and maintaining various infrastructure and home automation services. The codebase is organized into service-specific directories:
 
+- **1password/**: 1Password item management via the Python SDK (desktop app auth), e.g. URL autofill behavior
 - **alertmanager/**: Prometheus AlertManager silence and maintenance window management
 - **cloudflare/**: Cloudflare DNS and certificate management
 - **google/**: Google Calendar management (OAuth-based)
@@ -80,6 +81,7 @@ Scripts use external Python libraries:
 - `paho-mqtt` for MQTT client operations
 - `scapy` for network packet manipulation and analysis
 - `pyobjc-framework-Contacts` for macOS Contacts access
+- `onepassword-sdk` for 1Password item access (the `op` CLI cannot set URL autofill behavior)
 - `google-api-python-client`, `google-auth-httplib2`, `google-auth-oauthlib` for Google API access
 - Standard library modules: `os`, `json`, `argparse`, `datetime`
 

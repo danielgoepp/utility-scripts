@@ -23,6 +23,10 @@ python3 <service>/<script>.py -h
 
 ## Services
 
+### 1Password
+
+- `set-autofill-behavior.py` - Set the per-URL autofill behavior (e.g. "Only on this exact host") for every item with a URL on the configured domains, so logins for internal hosts sharing a parent domain stop being offered on each other; dry run by default, `--apply` to write. Uses the 1Password SDK with desktop app authentication (enable Settings > Developer > "Integrate with other apps"). Items containing fields the SDK cannot edit (e.g. legacy saved web-form fields) are skipped and reported for manual change in the app
+
 ### AlertManager
 
 - `alertmanager-maintenance.py` - Manage Prometheus AlertManager silences and maintenance windows
