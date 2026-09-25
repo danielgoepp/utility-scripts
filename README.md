@@ -60,7 +60,7 @@ python3 <service>/<script>.py -h
 
 ### Kopia
 
-- `kopia-check-backups.py` - Check backup health across Kopia instances
+- `kopia-check-backups.py` - Check backup health across Kopia instances: flags paused sources, stale or overdue snapshots, and snapshots that completed with file errors (listing the failed paths), with optional Alertmanager alerting
 
 ### macOS
 

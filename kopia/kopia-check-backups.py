@@ -2,8 +2,9 @@
 Check Kopia backup health by verifying all sources have recent snapshots.
 
 Connects to multiple Kopia server instances via the Control API to check
-that all configured backup sources are healthy: not paused, not errored,
-and have completed a snapshot within the configured maximum age threshold.
+that all configured backup sources are healthy: not paused, have completed
+a snapshot within the configured maximum age threshold, and the last
+snapshot finished without file errors (e.g. unreadable files).
 """
 
 import argparse
@@ -19,6 +20,9 @@ from config import (
     KOPIA_VERIFY_TLS,
     get_instance_config,
 )
+
+# Maximum number of failed file paths to show per source in output and alerts
+MAX_FAILED_SHOWN = 5
 
 
 def get_control_session(instance):
@@ -62,10 +66,19 @@ def format_age(hours):
     return f"{hours / 24:.1f}d"
 
 
+def get_snapshot_errors(snapshot):
+    """Return (error_count, [(path, error), ...]) for files that failed in a snapshot."""
+    error_count = snapshot.get("stats", {}).get("errorCount", 0)
+    summ = snapshot.get("rootEntry", {}).get("summ", {})
+    failed = [(e.get("path", "?"), e.get("error", "?")) for e in summ.get("errors") or []]
+    return max(error_count, summ.get("numFailed", 0)), failed
+
+
 def check_sources(sources, max_age_hours):
     """Check all sources for health issues.
 
-    Returns a list of (source_label, status, message) tuples.
+    Returns a list of (source_label, status, message, failed_files) tuples,
+    where failed_files is a list of (path, error) from the last snapshot.
     All sources are included regardless of status.
     """
     now = datetime.now(timezone.utc)
@@ -77,20 +90,23 @@ def check_sources(sources, max_age_hours):
         status = source_info.get("status", "UNKNOWN")
 
         if status == "PAUSED":
-            results.append((label, "WARNING", "Source is paused"))
+            results.append((label, "WARNING", "Source is paused", []))
             continue
 
         last_snapshot = source_info.get("lastSnapshot")
         if not last_snapshot:
-            results.append((label, "ERROR", "No snapshots found"))
+            results.append((label, "ERROR", "No snapshots found", []))
             continue
+
+        error_count, failed = get_snapshot_errors(last_snapshot)
+        error_suffix = f"; {error_count} file(s) failed" if error_count else ""
 
         end_time = parse_time(last_snapshot.get("endTime"))
         if not end_time:
             if parse_time(last_snapshot.get("startTime")):
-                results.append((label, "WARNING", "Last snapshot has no end time (may be incomplete)"))
+                results.append((label, "WARNING", f"Last snapshot has no end time (may be incomplete){error_suffix}", failed))
             else:
-                results.append((label, "ERROR", "Last snapshot has no timestamp"))
+                results.append((label, "ERROR", f"Last snapshot has no timestamp{error_suffix}", failed))
             continue
 
         age_hours = (now - end_time).total_seconds() / 3600
@@ -98,13 +114,15 @@ def check_sources(sources, max_age_hours):
         next_time = parse_time(source_info.get("nextSnapshotTime"))
 
         if age_hours > max_age_hours:
-            results.append((label, "ERROR", f"Last snapshot is {age_str} old (threshold: {max_age_hours}h)"))
+            results.append((label, "ERROR", f"Last snapshot is {age_str} old (threshold: {max_age_hours}h){error_suffix}", failed))
         elif next_time and next_time < now:
             overdue_str = format_age((now - next_time).total_seconds() / 3600)
-            results.append((label, "WARNING", f"Snapshot overdue by {overdue_str} (last snapshot {age_str} ago)"))
+            results.append((label, "WARNING", f"Snapshot overdue by {overdue_str} (last snapshot {age_str} ago){error_suffix}", failed))
+        elif error_count:
+            results.append((label, "WARNING", f"Last snapshot {age_str} ago completed with {error_count} error(s)", failed))
         else:
             next_str = f", next in {format_age((next_time - now).total_seconds() / 3600)}" if next_time else ""
-            results.append((label, "OK", f"Last snapshot {age_str} ago{next_str}"))
+            results.append((label, "OK", f"Last snapshot {age_str} ago{next_str}", []))
 
     return results
 
@@ -115,7 +133,7 @@ def send_alerts(all_results, instance_errors):
     alerts = []
 
     for instance_name, results in all_results.items():
-        for label, status, message in results:
+        for label, status, message, failed in results:
             severity = {"ERROR": "critical", "WARNING": "warning"}.get(status)
             labels = {
                 "alertname": "KopiaBackupUnhealthy",
@@ -124,7 +142,7 @@ def send_alerts(all_results, instance_errors):
             }
             annotations = {
                 "summary": f"Kopia backup issue on {instance_name}: {label}",
-                "description": message,
+                "description": "\n".join([message] + [f"{p}: {e}" for p, e in failed[:MAX_FAILED_SHOWN]]),
                 "severity": severity or "none",
             }
             if severity:
@@ -223,9 +241,12 @@ def main():
     if args.output_json:
         output = {
             "instances": [
-                {"instance": name, "source": label, "status": status, "message": msg}
+                {
+                    "instance": name, "source": label, "status": status, "message": msg,
+                    "failed_files": [{"path": p, "error": e} for p, e in failed],
+                }
                 for name, results in all_results.items()
-                for label, status, msg in results
+                for label, status, msg, failed in results
             ],
             "errors": [
                 {"instance": name, "error": msg}
@@ -245,20 +266,24 @@ def main():
             results = all_results[name]
             print(f"[{name}] {instance_urls[name]}")
 
-            problems = [(l, s, m) for l, s, m in results if s != "OK"]
+            problems = [r for r in results if r[1] != "OK"]
             if not problems and not args.verbose:
                 print(f"  All {len(results)} source(s) healthy")
             else:
                 shown = results if args.verbose else problems
-                for label, status, message in sorted(shown, key=lambda r: {"ERROR": 0, "WARNING": 1, "OK": 2}[r[1]]):
+                for label, status, message, failed in sorted(shown, key=lambda r: {"ERROR": 0, "WARNING": 1, "OK": 2}[r[1]]):
                     print(f"  {icons[status]} {label}: {message}")
+                    for path, error in failed[:MAX_FAILED_SHOWN]:
+                        print(f"      - {path}: {error}")
+                    if len(failed) > MAX_FAILED_SHOWN:
+                        print(f"      ... and {len(failed) - MAX_FAILED_SHOWN} more")
             print()
 
         # Summary
         flat = [r for results in all_results.values() for r in results]
-        errors = sum(1 for _, s, _ in flat if s == "ERROR")
-        warnings = sum(1 for _, s, _ in flat if s == "WARNING")
-        healthy = sum(1 for _, s, _ in flat if s == "OK")
+        errors = sum(1 for r in flat if r[1] == "ERROR")
+        warnings = sum(1 for r in flat if r[1] == "WARNING")
+        healthy = sum(1 for r in flat if r[1] == "OK")
         print(f"Summary: {len(instances_to_check)} instance(s), {total_sources} source(s): "
               f"{healthy} healthy, {warnings} warning(s), {errors} error(s), "
               f"{len(instance_errors)} unreachable")
@@ -274,7 +299,7 @@ def main():
             print(f"Error: Failed to send alerts to Alertmanager: {e}")
             sys.exit(2)
 
-    has_errors = any(s == "ERROR" for results in all_results.values() for _, s, _ in results) or instance_errors
+    has_errors = any(r[1] == "ERROR" for results in all_results.values() for r in results) or instance_errors
     sys.exit(1 if has_errors else 0)
 
 
