@@ -65,7 +65,7 @@ python3 <service>/<script>.py -h
 ### macOS
 
 - `export-contacts.py` - Export macOS Contacts to CSV
-- `MacOS Mount SMB.scpt` - AppleScript for automating SMB share mounts
+- `MacOS Mount SMB.scpt` - AppleScript for automating SMB share mounts; waits (up to 3 minutes) for the SMB server to be reachable before mounting, so it is safe to run as a login item
 
 ### Network
 
