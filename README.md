@@ -65,6 +65,7 @@ python3 <service>/<script>.py -h
 ### macOS
 
 - `export-contacts.py` - Export macOS Contacts to CSV
+- `update-installed-apps-note.py` - Keep a Markdown (e.g. Obsidian) note of the apps installed on this Mac: `/Applications` and `~/Applications` with versions and source (App Store, Homebrew, or manual), plus Homebrew casks and formulae installed on request. Only two marked regions are touched: an installed region regenerated each run, and a previously installed list that anything no longer installed is appended to with its last-seen date (hand-written entries there are kept). Content outside the markers is never changed, and missing regions are appended to the note. Set `INSTALLED_APPS_NOTE` in `macos/.env` or pass `--note`; `--dry-run` prints instead of writing, `--include-apple` adds Apple's bundled apps
 - `MacOS Mount SMB.scpt` - AppleScript for automating SMB share mounts; waits (up to 3 minutes) for the SMB server to be reachable before mounting, so it is safe to run as a login item
 
 ### Network
