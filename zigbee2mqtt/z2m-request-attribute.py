@@ -8,6 +8,7 @@ import sys
 import time
 
 import paho.mqtt.client as paho
+from paho.mqtt.enums import CallbackAPIVersion
 
 import config
 
@@ -19,7 +20,9 @@ class TemplateAttributeFixer:
     """Scan MQTT discovery configs for templates referencing a given JSON key."""
 
     def __init__(self):
-        self.client = None
+        self.client = paho.Client(
+            client_id="z2m-attribute-fixer", callback_api_version=CallbackAPIVersion.VERSION2
+        )
         self.configs = []  # list of (topic, payload dict)
 
     def on_connect(self, client, userdata, flags, rc, properties=None):
@@ -39,9 +42,6 @@ class TemplateAttributeFixer:
             self.configs.append((message.topic, payload))
 
     def collect(self, timeout):
-        self.client = paho.Client(
-            client_id="z2m-attribute-fixer", callback_api_version=paho.CallbackAPIVersion.VERSION2
-        )
         self.client.username_pw_set(username=config.MQTT_USERNAME, password=config.MQTT_PASSWORD)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -51,9 +51,8 @@ class TemplateAttributeFixer:
         time.sleep(timeout)
 
     def disconnect(self):
-        if self.client:
-            self.client.loop_stop()
-            self.client.disconnect()
+        self.client.loop_stop()
+        self.client.disconnect()
 
     def find_matches(self, key):
         """Return [(device_name, template_field, state_topic), ...] for configs whose

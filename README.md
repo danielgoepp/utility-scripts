@@ -109,6 +109,7 @@ python3 <service>/<script>.py -h
 
 ### Zigbee2MQTT
 
+- `z2m-device-count-check.py` - Check configured vs. live device counts and report to an Uptime Kuma Push monitor
 - `z2m-get-devices.py` - List Zigbee devices
 - `z2m-get-color-mode.py` - Query color mode for light devices
 - `z2m-monitor-device.py` - Monitor a specific device's MQTT messages

@@ -22,6 +22,33 @@ Collects and displays Zigbee device information from the Zigbee2MQTT bridge via 
 python3 z2m-get-devices.py [--format table|csv|json] [--details] [--timeout SECONDS] [--filter NAME]
 ```
 
+### z2m-device-count-check.py
+
+Verifies that each running Zigbee2MQTT bridge has loaded every device in its
+configuration, and reports the result to an Uptime Kuma Push monitor.
+
+**Features:**
+
+- Compares `<bridge>/bridge/info` → `config.devices` (configured) against
+  `<bridge>/bridge/devices` (live, Coordinator excluded), both retained topics
+- Matches by IEEE address and names any device missing from either side
+- `--push` sends `status=up|down`, a summary `msg`, and the live device count as
+  `ping` to the bridge's Push monitor, so Uptime Kuma graphs the count over time
+- Missing bridge topics (Zigbee2MQTT down) report as a mismatch
+- Exits 1 on any mismatch
+
+**Setup:** create one Uptime Kuma monitor of type **Push** per bridge. Set
+`UPTIME_KUMA_URL` to the Uptime Kuma base URL and
+`UPTIME_KUMA_PUSH_TOKEN_<BRIDGE>` (e.g. `UPTIME_KUMA_PUSH_TOKEN_ZIGBEE15`) to
+each monitor's push token (the last segment of its push URL). Run the script on
+a schedule shorter than the monitor's heartbeat interval.
+
+**Usage:**
+
+```bash
+python3 z2m-device-count-check.py [--bridge zigbee15] [--push] [--json] [--timeout SECONDS]
+```
+
 ### z2m-get-offline.py
 
 Monitors Zigbee devices for offline status and optionally sends email notifications.

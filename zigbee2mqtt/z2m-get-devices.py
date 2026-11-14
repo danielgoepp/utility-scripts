@@ -7,6 +7,7 @@ import argparse
 import smtplib
 from email.mime.text import MIMEText
 import paho.mqtt.client as paho
+from paho.mqtt.enums import CallbackAPIVersion
 import config
 
 
@@ -74,7 +75,7 @@ class ZigbeeDeviceCollector:
             print("Error: Missing MQTT configuration. Check your .env file.", file=sys.stderr)
             sys.exit(1)
 
-        self.client = paho.Client(client_id="z2m-device-collector", callback_api_version=paho.CallbackAPIVersion.VERSION2)
+        self.client = paho.Client(client_id="z2m-device-collector", callback_api_version=CallbackAPIVersion.VERSION2)
         self.client.username_pw_set(username=config.MQTT_USERNAME, password=config.MQTT_PASSWORD)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -343,7 +344,7 @@ class ZigbeeDeviceCollector:
 
     def send_email_notification(self, offline_devices):
         """Send email notification about offline devices."""
-        if not all([config.SMTP_HOST, config.FROM_EMAIL, config.TO_EMAIL]):
+        if not (config.SMTP_HOST and config.FROM_EMAIL and config.TO_EMAIL):
             print("Error: Missing email configuration. Check your .env file.", file=sys.stderr)
             return False
 
